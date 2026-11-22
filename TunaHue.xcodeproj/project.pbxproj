@@ -9,6 +9,7 @@
 		AAAAAAAAAAAAAAAAAAAAAAAA /* HueExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA8; };
 		AAAAAAAAAAAAAAAAAAAAAAAB /* HueBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA9; };
 		AAAAAAAAAAAAAAAAAAAAAAAE /* TunaKit in Frameworks */ = {isa = PBXBuildFile; productRef = AAAAAAAAAAAAAAAAAAAAAA10; };
+		AAAAAAAAAAAAAAAAAAAAAAB1 /* HueConnections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB0; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +17,7 @@
 		AAAAAAAAAAAAAAAAAAAAAAA9 /* HueBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueBridge.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAAA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAAA6 /* TunaHue.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TunaHue.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAAAAAAAAAAAAAAAAAAAAAB0 /* HueConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueConnections.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -26,7 +28,7 @@
 		};
 		AAAAAAAAAAAAAAAAAAAAAAA3 /* Sources */ = {
 			isa = PBXGroup;
-			children = (AAAAAAAAAAAAAAAAAAAAAAA8, AAAAAAAAAAAAAAAAAAAAAAA9);
+			children = (AAAAAAAAAAAAAAAAAAAAAAA8, AAAAAAAAAAAAAAAAAAAAAAA9, AAAAAAAAAAAAAAAAAAAAAAB0);
 			path = Sources;
 			sourceTree = "<group>";
 		};
@@ -51,7 +53,7 @@
 		AAAAAAAAAAAAAAAAAAAAAAAC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (AAAAAAAAAAAAAAAAAAAAAAAA, AAAAAAAAAAAAAAAAAAAAAAAB);
+			files = (AAAAAAAAAAAAAAAAAAAAAAAA, AAAAAAAAAAAAAAAAAAAAAAAB, AAAAAAAAAAAAAAAAAAAAAAB1);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
