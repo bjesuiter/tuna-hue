@@ -1,6 +1,5 @@
 import AppKit
 import OSLog
-import QuartzCore
 import TunaKit
 
 extension TypeID {
@@ -48,7 +47,7 @@ private enum HuePairing {
       let result = try await (manual ? connectManually() : connectAutomatically())
       switch result {
       case .connected(let name):
-        celebrateConnection(to: name)
+        showConnectionConfirmation(for: name)
         return true
       case .cancelled: return false
       case .switchMode: manual.toggle()
@@ -162,47 +161,10 @@ private enum HuePairing {
     return .connected(name)
   }
 
-  private static func celebrateConnection(to name: String) {
+  private static func showConnectionConfirmation(for name: String) {
     let alert = NSAlert()
-    alert.messageText = "Successfully connected to “\(name)”"
+    alert.messageText = "Successfully connected to Hue bridge “\(name)”"
     alert.addButton(withTitle: "Done")
-    if !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
-      let view = NSView(frame: NSRect(x: 0, y: 0, width: 270, height: 90))
-      view.wantsLayer = true
-      let emitter = CAEmitterLayer()
-      emitter.frame = view.bounds
-      emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: 12)
-      emitter.masksToBounds = true
-      emitter.emitterCells = [
-        NSColor.systemPink, .systemOrange, .systemYellow, .systemTeal, .systemPurple,
-      ].map { color in
-        let piece = NSImage(size: NSSize(width: 7, height: 4), flipped: false) { rect in
-          color.setFill()
-          NSBezierPath(rect: rect).fill()
-          return true
-        }
-        let cell = CAEmitterCell()
-        cell.contents = piece.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        cell.birthRate = 35
-        cell.lifetime = 1.3
-        cell.velocity = 105
-        cell.velocityRange = 50
-        cell.emissionLongitude = .pi / 2
-        cell.emissionRange = .pi * 0.85
-        cell.yAcceleration = -145
-        cell.spinRange = 8
-        cell.alphaSpeed = -0.6
-        return cell
-      }
-      view.layer?.addSublayer(emitter)
-      alert.accessoryView = view
-      let burst = CAKeyframeAnimation(keyPath: "birthRate")
-      burst.values = [1, 1, 0]
-      burst.keyTimes = [0, 0.7, 1]
-      burst.duration = 0.35
-      emitter.birthRate = 0
-      emitter.add(burst, forKey: "confetti")
-    }
     alert.runModal()
   }
 }
@@ -360,7 +322,7 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
   public func scan() async {
     let currentScan = UUID()
     scanID = currentScan
-    var items: [CatalogItem] = [bridgeCommand(manage: false), bridgeCommand(manage: true)]
+    var items: [CatalogItem] = []
     do {
       let records = try HueConnections.records()
       let groupsByBridge = await withTaskGroup(
@@ -389,6 +351,9 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
       }
       guard scanID == currentScan, !Task.isCancelled else { return }
       let current = try HueConnections.records()
+      if !current.isEmpty {
+        items.append(bridgeCommand(manage: true))
+      }
       var groupCount = 0
       var failed = 0
       for id in current.keys.sorted() {
@@ -397,13 +362,14 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
         switch result {
         case .success(let groups):
           groupCount += groups.count
-          let bridgeName = Self.label(for: record, among: current)
-          items += groups.map { HueGroupItem(group: $0, bridgeID: id, bridgeName: bridgeName) }
+          let bridgeLabel = Self.label(for: record, among: current)
+          items += groups.map { HueGroupItem(group: $0, bridge: record, bridgeLabel: bridgeLabel) }
         case .failure(let error):
           failed += 1
           logger.error("Hue scan for \(record.name, privacy: .private) failed: \(error.localizedDescription, privacy: .private)")
         }
       }
+      items.append(bridgeCommand(manage: false, first: current.isEmpty))
       status = current.isEmpty ? "No Hue bridges connected"
         : "Loaded \(groupCount) Hue groups from \(current.count - failed) of \(current.count) bridges"
     } catch {
@@ -426,10 +392,11 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
     return duplicate ? "\(record.name) (\(record.id.uppercased()))" : record.name
   }
 
-  private func bridgeCommand(manage: Bool) -> CommandItem {
-    CommandItem(
+  private func bridgeCommand(manage: Bool, first: Bool = false) -> CatalogItem {
+    let title = manage ? "Manage Hue Bridges" : (first ? "Connect First Hue Bridge" : "Add Hue Bridge")
+    let command = CommandItem(
       id: manage ? "manage-bridges" : "connect-bridge",
-      title: manage ? "Manage Hue Bridges" : "Add Hue Bridge",
+      title: title,
       symbol: manage ? "gearshape" : "link",
       detail: "Philips Hue", tintColor: .systemOrange,
       headlessEligibility: .requiresInterface, executionPolicy: .dismiss
@@ -445,6 +412,7 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
         return .failure(error.localizedDescription)
       }
     }
+    return manage || first ? command : AddHueBridgeItem(command: command)
   }
 
   private static func manageBridges() throws -> Bool {
@@ -457,7 +425,7 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
     let alert = NSAlert()
     alert.messageText = "Manage Hue Bridges"
     guard !sorted.isEmpty else {
-      alert.informativeText = "No Hue bridges are connected. Use Add Hue Bridge to connect one."
+      alert.informativeText = "No Hue bridges are connected. Use Connect First Hue Bridge to connect one."
       alert.addButton(withTitle: "Done")
       alert.runModal()
       return false
@@ -489,21 +457,53 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
   }
 }
 
+private final class AddHueBridgeItem: CatalogEntity, Runnable, @unchecked Sendable {
+  private let command: CommandItem
+
+  init(command: CommandItem) {
+    self.command = command
+    super.init(id: command.id, title: command.title, path: nil)
+    type = command.type
+    typeID = command.typeID
+  }
+
+  override var detail: String? { command.detail }
+  override var searchKeys: [String] { super.searchKeys + ["Connect Hue Bridge"] }
+  var headlessEligibility: CommandHeadlessEligibility { command.headlessEligibility }
+  var executionPolicy: CommandExecutionPolicy { command.executionPolicy }
+
+  func run() async -> ActionResult { await command.run() }
+
+  override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
+    command.preview(maxDimension: maxDimension)
+  }
+
+  override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
+    command.placeholderPreview(maxDimension: maxDimension)
+  }
+}
+
 private final class HueGroupItem: CatalogEntity, @unchecked Sendable {
   let group: HueGroup
   let bridgeID: String
 
   private let bridgeName: String
+  private let bridgeLabel: String
 
-  init(group: HueGroup, bridgeID: String, bridgeName: String) {
+  init(group: HueGroup, bridge: HueConnection, bridgeLabel: String) {
     self.group = group
-    self.bridgeID = bridgeID
-    self.bridgeName = bridgeName
-    super.init(id: "\(bridgeID)/\(group.kind.rawValue)/\(group.id)", title: group.name, path: nil)
+    bridgeID = bridge.id
+    bridgeName = bridge.name
+    self.bridgeLabel = bridgeLabel
+    super.init(id: "\(bridge.id)/\(group.kind.rawValue)/\(group.id)", title: group.name, path: nil)
     typeID = .hueGroup
   }
 
-  override var detail: String? { "\(group.kind.label) · \(bridgeName)" }
+  override var detail: String? { "\(group.kind.label) · \(bridgeLabel)" }
+
+  override var searchKeys: [String] {
+    super.searchKeys + ["Hue", "Hue \(group.name)", "\(bridgeName) \(group.name)"]
+  }
 
   override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
     .systemSymbol(group.kind == .room ? "lightbulb" : "lightbulb.2", tintColor: .systemOrange)

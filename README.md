@@ -21,9 +21,9 @@ Quit and reopen Tuna after installation or a rebuild. Tuna supplies the TunaKit 
 
 ## Connect and manage bridges
 
-Search globally in Tuna for **Hue** and run **Add Hue Bridge**. If it is missing, set **Hue Groups → In global search** to **All** in Sources. Tuna uses Philips Hue's discovery service to find bridges. Choose a bridge and Tuna waits up to 90 seconds for you to press its physical link button. Tuna verifies the connection, saves a separate application key for each bridge in the macOS Keychain, and loads your rooms and zones. Allow local network access for Tuna if macOS asks.
+Search globally in Tuna for **Hue** and run **Connect First Hue Bridge**. If it is missing, set **Hue Groups → In global search** to **All** in Sources. Tuna uses Philips Hue's discovery service to find bridges. Choose a bridge and Tuna waits up to 90 seconds for you to press its physical link button. Tuna verifies the connection, saves a separate application key for each bridge in the macOS Keychain, and loads your rooms and zones. Allow local network access for Tuna if macOS asks.
 
-Use **Add Hue Bridge** again to connect another bridge. An existing single-bridge connection is migrated on first use with its saved key. Use **Manage Hue Bridges** to select and disconnect a bridge. Disconnect removes that bridge and its saved key from Tuna on this Mac.
+Use **Add Hue Bridge** to connect another bridge. Searching for **Connect Hue Bridge** also finds it. An existing single-bridge connection is migrated on first use with its saved key. Use **Manage Hue Bridges** to select and disconnect a bridge. Disconnect removes that bridge and its saved key from Tuna on this Mac.
 
 ### Connect manually
 
