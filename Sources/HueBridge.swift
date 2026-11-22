@@ -37,10 +37,10 @@ enum HueError: LocalizedError {
 struct HueBridge: Sendable {
   let id: String
   private let baseURL: URL
-  private let key: String
+  private let key: String?
   private let trust: HueTrust
 
-  init(address: String, id: String, key: String, caPEM: String) throws {
+  init(address: String, id: String, key: String? = nil, caPEM: String) throws {
     guard id.utf8.count == 16, id.utf8.allSatisfy({
       (48...57).contains($0) || (97...102).contains($0)
     }) else {
@@ -56,7 +56,7 @@ struct HueBridge: Sendable {
           let baseURL = components.url else {
       throw HueError.configuration("Enter the bridge IPv4 address or local hostname.")
     }
-    guard !key.isEmpty, key.utf8.allSatisfy({ (33...126).contains($0) }) else {
+    if let key, key.isEmpty || !key.utf8.allSatisfy({ (33...126).contains($0) }) {
       throw HueError.configuration("Enter the Hue application key.")
     }
 
@@ -70,6 +70,34 @@ struct HueBridge: Sendable {
     async let rooms = groups(of: .room)
     async let zones = groups(of: .zone)
     return try await rooms + zones
+  }
+
+  func name() async throws -> String? {
+    struct Configuration: Decodable { let name: String? }
+
+    let url = baseURL.appendingPathComponent("api/config")
+    let data = try await send(URLRequest(url: url, timeoutInterval: 2))
+    return try JSONDecoder().decode(Configuration.self, from: data).name?
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  func pair() async throws -> String {
+    var request = URLRequest(url: baseURL.appendingPathComponent("api"))
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = Data(#"{"devicetype":"tuna-hue#mac"}"#.utf8)
+
+    let clock = ContinuousClock()
+    let deadline = clock.now + .seconds(90)
+    while clock.now < deadline {
+      try Task.checkCancellation()
+      let data = try await send(request)
+      let replies = try JSONDecoder().decode([PairingReply].self, from: data)
+      if let username = replies.first?.success?.username, !username.isEmpty { return username }
+      guard replies.first?.error?.type == 101 else { throw HueError.rejected }
+      try await Task.sleep(for: .seconds(1))
+    }
+    throw HueError.configuration("Pairing timed out. Run Connect Hue Bridge to try again.")
   }
 
   func setPower(_ on: Bool, lightID: UUID) async throws {
@@ -93,6 +121,7 @@ struct HueBridge: Sendable {
   }
 
   private func request<Value: Decodable>(_ path: String, body: Data? = nil) async throws -> [Value] {
+    guard let key else { throw HueError.configuration("Enter the Hue application key.") }
     let url = baseURL.appendingPathComponent("clip/v2/resource/\(path)")
     var request = URLRequest(url: url)
     request.setValue(key, forHTTPHeaderField: "hue-application-key")
@@ -103,6 +132,13 @@ struct HueBridge: Sendable {
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
 
+    let data = try await send(request)
+    let envelope = try JSONDecoder().decode(Envelope<Value>.self, from: data)
+    guard envelope.errors.isEmpty else { throw HueError.rejected }
+    return envelope.data
+  }
+
+  private func send(_ request: URLRequest) async throws -> Data {
     let config = URLSessionConfiguration.ephemeral
     config.timeoutIntervalForRequest = 5
     config.timeoutIntervalForResource = 10
@@ -114,9 +150,36 @@ struct HueBridge: Sendable {
     if http.statusCode == 401 || http.statusCode == 403 { throw HueError.authorization }
     guard (200..<300).contains(http.statusCode) else { throw HueError.http(http.statusCode) }
 
-    let envelope = try JSONDecoder().decode(Envelope<Value>.self, from: data)
-    guard envelope.errors.isEmpty else { throw HueError.rejected }
-    return envelope.data
+    return data
+  }
+}
+
+private struct PairingReply: Decodable {
+  struct Success: Decodable { let username: String }
+  struct Failure: Decodable { let type: Int }
+  let success: Success?
+  let error: Failure?
+}
+
+struct DiscoveredHueBridge: Decodable, Hashable {
+  let id: String
+  let internalipaddress: String
+
+  func displayName() async -> String {
+    if let client = try? HueBridge(address: internalipaddress, id: id.lowercased(), caPEM: hueRootCertificates),
+       let name = try? await client.name(), !name.isEmpty {
+      return name
+    }
+    return "Hue Bridge \(id.uppercased())"
+  }
+
+  static func discover() async throws -> [Self] {
+    let url = URL(string: "https://discovery.meethue.com")!
+    let (data, response) = try await URLSession.shared.data(
+      for: URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 8)
+    )
+    guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw HueError.response }
+    return Array(Set(try JSONDecoder().decode([Self].self, from: data))).sorted { $0.id < $1.id }
   }
 }
 
@@ -164,9 +227,11 @@ private final class HueTrust: NSObject, URLSessionTaskDelegate, Sendable {
     _ session: URLSession, didReceive challenge: URLAuthenticationChallenge,
     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
+    // Hue bridge certificates can outlive the SSL policy limit. Check the chain against
+    // the dedicated Hue roots and match the bridge ID in the leaf instead.
     guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
           let trust = challenge.protectionSpace.serverTrust,
-          SecTrustSetPolicies(trust, SecPolicyCreateSSL(true, nil)) == errSecSuccess,
+          SecTrustSetPolicies(trust, SecPolicyCreateBasicX509()) == errSecSuccess,
           SecTrustSetAnchorCertificates(trust, anchors as CFArray) == errSecSuccess,
           SecTrustSetAnchorCertificatesOnly(trust, true) == errSecSuccess,
           SecTrustSetNetworkFetchAllowed(trust, false) == errSecSuccess,
@@ -193,3 +258,33 @@ private final class HueTrust: NSObject, URLSessionTaskDelegate, Sendable {
     completionHandler(nil)
   }
 }
+
+// Philips Hue bridge roots from the Hue HTTPS guide, mirrored by OpenHue.
+let hueRootCertificates = """
+-----BEGIN CERTIFICATE-----
+MIICMjCCAdigAwIBAgIUO7FSLbaxikuXAljzVaurLXWmFw4wCgYIKoZIzj0EAwIw
+OTELMAkGA1UEBhMCTkwxFDASBgNVBAoMC1BoaWxpcHMgSHVlMRQwEgYDVQQDDAty
+b290LWJyaWRnZTAiGA8yMDE3MDEwMTAwMDAwMFoYDzIwMzgwMTE5MDMxNDA3WjA5
+MQswCQYDVQQGEwJOTDEUMBIGA1UECgwLUGhpbGlwcyBIdWUxFDASBgNVBAMMC3Jv
+b3QtYnJpZGdlMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjNw2tx2AplOf9x86
+aTdvEcL1FU65QDxziKvBpW9XXSIcibAeQiKxegpq8Exbr9v6LBnYbna2VcaK0G22
+jOKkTqOBuTCBtjAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBhjAdBgNV
+HQ4EFgQUZ2ONTFrDT6o8ItRnKfqWKnHFGmQwdAYDVR0jBG0wa4AUZ2ONTFrDT6o8
+ItRnKfqWKnHFGmShPaQ7MDkxCzAJBgNVBAYTAk5MMRQwEgYDVQQKDAtQaGlsaXBz
+IEh1ZTEUMBIGA1UEAwwLcm9vdC1icmlkZ2WCFDuxUi22sYpLlwJY81Wrqy11phcO
+MAoGCCqGSM49BAMCA0gAMEUCIEBYYEOsa07TH7E5MJnGw557lVkORgit2Rm1h3B2
+sFgDAiEA1Fj/C3AN5psFMjo0//mrQebo0eKd3aWRx+pQY08mk48=
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIBzDCCAXOgAwIBAgICEAAwCgYIKoZIzj0EAwIwPDELMAkGA1UEBhMCTkwxFDAS
+BgNVBAoMC1NpZ25pZnkgSHVlMRcwFQYDVQQDDA5IdWUgUm9vdCBDQSAwMTAgFw0y
+NTAyMjUwMDAwMDBaGA8yMDUwMTIzMTIzNTk1OVowPDELMAkGA1UEBhMCTkwxFDAS
+BgNVBAoMC1NpZ25pZnkgSHVlMRcwFQYDVQQDDA5IdWUgUm9vdCBDQSAwMTBZMBMG
+ByqGSM49AgEGCCqGSM49AwEHA0IABFfOO0jfSAUXGQ9kjEDzyBrcMQ3ItyA5krE+
+cyvb1Y3xFti7KlAad8UOnAx0FBLn7HZrlmIwm1QnX0fK3LPM13mjYzBhMB0GA1Ud
+DgQWBBTF1pSpsCASX/z0VHLigxU2CAaqoTAfBgNVHSMEGDAWgBTF1pSpsCASX/z0
+VHLigxU2CAaqoTAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBBjAKBggq
+hkjOPQQDAgNHADBEAiAk7duT+IHbOGO4UUuGLAEpyYejGZK9Z7V9oSfnvuQ5BQIg
+IYSgwwxHXm73/JgcU9lAM6c8Bmu3UE3kBIUwBs1qXFw=
+-----END CERTIFICATE-----
+"""

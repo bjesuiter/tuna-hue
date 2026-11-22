@@ -21,11 +21,17 @@ Quit and reopen Tuna after installation or a rebuild. Tuna supplies the TunaKit 
 
 ## Connect the bridge
 
+Search globally in Tuna for **Hue** and run **Connect Hue Bridge**. If it is missing, set **Hue Groups → In global search** to **All** in Sources. Tuna uses Philips Hue's discovery service to find the bridge, then waits up to 90 seconds for you to press its physical link button. Tuna verifies the connection, saves the application key in the macOS Keychain, and loads your rooms and zones. Allow local network access for Tuna if macOS asks.
+
+### Connect manually
+
+Select **Connect manually** in the pairing prompt to enter the bridge details yourself.
+
 1. Find the bridge’s local IPv4 address and its full 16-character hexadecimal bridge ID. The Hue app shows bridge details, and the [Hue discovery service](https://discovery.meethue.com) can return the ID and local IP for bridges on your network.
-2. Download the root CA PEM for your bridge from [Philips Hue’s HTTPS guidance](https://developers.meethue.com/develop/application-design-guidance/using-https/) and save it locally. That page may require a Hue developer login.
+2. Leave the certificate path blank to use the bundled Hue roots. To use a specific root CA PEM file, enter its absolute path. [Philips Hue HTTPS guidance](https://developers.meethue.com/develop/application-design-guidance/using-https/)
 3. Use an existing Hue application key or create one using the bridge’s physical link button, as shown below.
-4. In Tuna, open **Settings → Sources → Extensions → Hue Control**. Enter the bridge address, bridge ID, application key, and absolute path to the PEM file. Tuna stores the key in the macOS Keychain.
-5. Rescan **Hue Groups** in Sources or restart Tuna. If macOS asks for local network access, allow it for Tuna.
+
+To edit an existing connection, open **Settings → Sources → Extensions → Hue Control** and rescan **Hue Groups** after making changes.
 
 To create a key, set the shell variables to your bridge details, press the physical link button, then run:
 
@@ -42,4 +48,4 @@ hue_ca="$HOME/Downloads/hue-ca.pem"
 
 Copy the returned `success.username` into Tuna’s **Application key** field. If the bridge reports that the link button was not pressed, press it again immediately before retrying. [Philips Hue pairing guide](https://developers.meethue.com/develop/get-started-2/)
 
-The extension uses the configured address to connect and the bridge ID to verify the certificate against the supplied Hue CA. If a scan fails, check the address, ID, key, and CA in the extension settings, then look at the catalog diagnostics. This proof of concept uses manual setup and explicit on/off actions. It does not show current power state.
+The extension uses the configured address to connect and verifies the certificate against the Hue CA and bridge ID. If a scan fails, check the address, ID, key, and CA in the extension settings, then look at the catalog diagnostics. The extension offers explicit on/off actions.
