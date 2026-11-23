@@ -7,6 +7,8 @@
     "dev": "bgproc start -n tuna-hue-website -w 20 -- bun --filter @tuna-hue/website dev --ignore-lock",
     "build": "bun --filter @tuna-hue/website build",
     "preview": "bun --filter @tuna-hue/website preview",
-    "build:plugin": "bun --filter @tuna-hue/plugin build"
+    "build:plugin": "bun --filter @tuna-hue/plugin build",
+    "screenshots": "bash scripts/screenshots/proof.sh --publish",
+    "screenshots:proof": "bash scripts/screenshots/proof.sh"
   }
 }
