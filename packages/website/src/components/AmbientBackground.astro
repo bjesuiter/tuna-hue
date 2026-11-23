@@ -16,7 +16,7 @@
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
-    background-color: var(--sky, white);
+    background-color: var(--sky, oklch(100% 0 0));
   }
   .field::before, .field::after {
     content: '';
@@ -24,12 +24,12 @@
     inset: 0;
   }
   .field::before {
-    background: radial-gradient(ellipse at 82% 22%, #fdf1e9, transparent 70%);
+    background: radial-gradient(ellipse at 82% 22% in oklch, oklch(96.54% 0.0168 56.2), oklch(none none none / 0) 70%);
   }
   .field::after {
     background:
-      radial-gradient(ellipse at 76% 46%, #344f70, transparent 56%),
-      radial-gradient(ellipse at 26% 91%, #152840, transparent 65%);
+      radial-gradient(ellipse at 76% 46% in oklch, oklch(42.9% 0.082 254), oklch(none none none / 0) 56%),
+      radial-gradient(ellipse at 26% 91% in oklch, oklch(27.6% 0.065 254), oklch(none none none / 0) 65%);
     opacity: var(--moonlight, 0);
   }
   .field::before, .glow { opacity: calc(1 - var(--moonlight, 0)); }
@@ -38,17 +38,17 @@
     inline-size: max(86vw, 29rem);
     block-size: max(102%, 32rem);
     background: radial-gradient(
-      ellipse closest-side,
+      ellipse closest-side in oklch,
       var(--light) 0%,
-      color-mix(in srgb, var(--light) 78%, transparent) 32%,
-      color-mix(in srgb, var(--light) 24%, transparent) 69%,
-      transparent 100%
+      color-mix(in oklch, var(--light) 78%, oklch(none none none / 0)) 32%,
+      color-mix(in oklch, var(--light) 24%, oklch(none none none / 0)) 69%,
+      oklch(none none none / 0) 100%
     );
   }
-  .peach { --light: #ffb191bb; inset: -29% auto auto -26%; }
-  .lilac { --light: #c19afbc0; inset: 6% auto auto 4%; }
-  .mint { --light: #83dfc7b0; inset: -12% -27% auto auto; }
-  .blue { --light: #a2c9ffc4; inset: 42% auto auto 5%; }
+  .peach { --light: oklch(82.5% 0.132 44 / 0.733); inset: -29% auto auto -26%; }
+  .lilac { --light: oklch(75.5% 0.167 303 / 0.753); inset: 6% auto auto 4%; }
+  .mint { --light: oklch(82.9% 0.145 171 / 0.69); inset: -12% -27% auto auto; }
+  .blue { --light: oklch(80.1% 0.111 254 / 0.769); inset: 42% auto auto 5%; }
 
   button {
     position: absolute;
@@ -58,7 +58,7 @@
     border-radius: .35rem;
     padding: .25rem .4rem;
     color: var(--muted-ink);
-    background: transparent;
+    background: oklch(none none none / 0);
     font-size: .75rem;
     cursor: pointer;
   }
@@ -92,16 +92,26 @@
     let paused = false;
     let boost = 0;
     let requestedBoost = 0;
+    let rippleRate = 1;
+    let wheelDirection = 1;
     let frame = 0;
     let lastFrame = 0;
     let lastWheelTime = 0;
+
+    function applyMotion() {
+      for (const animation of animations) animation.updatePlaybackRate(1 + boost);
+      document.dispatchEvent(new CustomEvent('ambient-motion-change', {
+        detail: { paused, rippleRate },
+      }));
+    }
 
     function resetSpeed() {
       cancelAnimationFrame(frame);
       frame = 0;
       boost = 0;
       requestedBoost = 0;
-      for (const animation of animations) animation.updatePlaybackRate(1);
+      rippleRate = 1;
+      applyMotion();
     }
 
     function updateMotion() {
@@ -120,14 +130,18 @@
 
     function easeSpeed(now: number) {
       if (now - lastWheelTime > 110) requestedBoost = 0;
+      const elapsed = now - lastFrame;
       const ramp = requestedBoost > boost ? 40 : 175;
-      boost += (requestedBoost - boost) * (1 - Math.exp(-(now - lastFrame) / ramp));
-      if (!requestedBoost && boost < .02) {
+      boost += (requestedBoost - boost) * (1 - Math.exp(-elapsed / ramp));
+      const rippleTarget = requestedBoost ? wheelDirection * (1 + requestedBoost) : 1;
+      const rippleRamp = requestedBoost ? 40 : 175;
+      rippleRate += (rippleTarget - rippleRate) * (1 - Math.exp(-elapsed / rippleRamp));
+      if (!requestedBoost && boost < .02 && Math.abs(rippleRate - 1) < .02) {
         resetSpeed();
         return;
       }
 
-      for (const animation of animations) animation.updatePlaybackRate(1 + boost);
+      applyMotion();
       lastFrame = now;
       frame = requestAnimationFrame(easeSpeed);
     }
@@ -143,6 +157,7 @@
       if (!distance) return;
 
       const now = performance.now();
+      wheelDirection = event.deltaY < 0 ? -1 : 1;
       requestedBoost = Math.min(6, requestedBoost + distance / 17.5);
       lastWheelTime = now;
       if (!frame) {
@@ -159,7 +174,6 @@
         else animation.play();
       }
       button.textContent = paused ? 'Resume ambient motion' : 'Pause ambient motion';
-      document.dispatchEvent(new CustomEvent('ambient-motion-change', { detail: paused }));
     });
 
     motion.addEventListener('change', updateMotion);

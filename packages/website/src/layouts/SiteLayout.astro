@@ -11,6 +11,7 @@ const { ambientLighting, title, description } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const currentPath = Astro.url.pathname.replace(/\/$/, '');
+const isHome = currentPath === base;
 const mainLinks = [
   { path: base + '/how-it-works', label: 'See how it works' },
   { path: base + '/install', label: 'Install now' },
@@ -24,14 +25,22 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <script is:inline>
+      if (new URLSearchParams(location.search).get('lamp') === 'off') {
+        document.documentElement.dataset.lamp = 'off';
+      }
+    </script>
   </head>
   <body>
     <div class="page">
       <header>
-        <a class="wordmark" href={base + '/'}><span class="mark" aria-hidden="true"></span>Tuna Hue Control</a>
+        <a class="wordmark" href={base + '/'} data-lamp-link>
+          {!isHome && <span class="mark lamp-transition" aria-hidden="true"></span>}
+          Tuna Hue Control
+        </a>
         <nav aria-label="Main">
           {mainLinks.map(({ path, label }) => (
-            <a href={path + '/'} aria-current={currentPath === path ? 'page' : undefined}>{label}</a>
+            <a href={path + '/'} aria-current={currentPath === path ? 'page' : undefined} data-lamp-link>{label}</a>
           ))}
           <a class="github" href={repository}>
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -54,6 +63,12 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
   </body>
 </html>
 
+<script>
+  import { syncLampLinks } from '../components/lamp-state';
+
+  syncLampLinks();
+</script>
+
 <style is:global>
   @media (prefers-reduced-motion: no-preference) {
     @view-transition { navigation: auto; }
@@ -61,23 +76,29 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     :root { scroll-behavior: smooth; }
 
     ::view-transition-group(root) { animation-duration: 260ms; }
+
+    .lamp-transition { view-transition-name: hue-lamp; }
+    ::view-transition-group(hue-lamp) {
+      animation-duration: 420ms;
+      animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+    }
   }
 
   :root {
     color-scheme: light;
-    --paper: #fff;
-    --ink: #16151a;
-    --muted-ink: #595665;
-    --line: #dedce4;
-    --accent: #eff5ff;
-    --focus: #6646d3;
-    --glass-panel: #fbfdffdf;
-    --glass-control: #eef5ff40;
-    --glass-control-hover: #eef5ff70;
-    --glass-control-glint: #ffffff54;
-    --glass-edge: #7287a654;
-    --glass-glint: #ffffffbb;
-    --glass-shadow: 0 16px 38px -26px #465d8c73, 0 3px 12px #6d83ae24;
+    --paper: oklch(100% 0 0);
+    --ink: oklch(19.91% 0.01 294.6);
+    --muted-ink: oklch(46.15% 0.0243 294.6);
+    --line: oklch(89.84% 0.011 297.6);
+    --accent: oklch(96.85% 0.0148 260.7);
+    --focus: oklch(51.29% 0.2049 287.3);
+    --glass-panel: oklch(99.31% 0.0034 247.9 / 0.875);
+    --glass-control: oklch(96.78% 0.0153 257.2 / 0.251);
+    --glass-control-hover: oklch(96.78% 0.0153 257.2 / 0.439);
+    --glass-control-glint: oklch(100% 0 0 / 0.329);
+    --glass-edge: oklch(61.83% 0.0531 258 / 0.329);
+    --glass-glint: oklch(100% 0 0 / 0.733);
+    --glass-shadow: 0 16px 38px -26px oklch(48.11% 0.0813 263.7 / 0.451), 0 3px 12px oklch(60.94% 0.0706 263.4 / 0.141);
     --heading-font: 'Avenir Next', system-ui, sans-serif;
     background: var(--paper);
     color: var(--ink);
@@ -112,14 +133,14 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     width: 1.1rem;
     aspect-ratio: 1;
     border-radius: 50%;
-    border: 1px solid #c2b7d0;
-    box-shadow: 0 4px 12px #aca1d85c;
-    background: var(--mark-light, conic-gradient(#f4c6e3, #cec9f7, #c7ebec, #f9eccb, #f4c6e3));
+    border: 1px solid oklch(79.64% 0.0368 305.4);
+    box-shadow: 0 4px 12px oklch(73.78% 0.0793 293.5 / 0.361);
+    background: var(--mark-light, conic-gradient(in oklch, oklch(87.5% 0.0641 340.4), oklch(85.49% 0.0636 290), oklch(91.47% 0.0375 198.6), oklch(94.5% 0.0454 89.1), oklch(87.5% 0.0641 340.4)));
   }
 
   .glass-panel, .glass-control {
     border: 1px solid var(--glass-edge);
-    background-image: var(--glass-tint, none), linear-gradient(155deg, var(--glass-glint), transparent 58%);
+    background-image: var(--glass-tint, none), linear-gradient(155deg in oklch, var(--glass-glint), oklch(none none none / 0) 58%);
     box-shadow: inset 0 1px 0 var(--glass-glint), var(--glass-shadow);
   }
 
@@ -130,9 +151,9 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
 
   .glass-rainbow {
     --glass-tint: var(--instruction-glow,
-      radial-gradient(ellipse 15rem 6rem at left top, #ffdcaa, #f7afd389 44%, transparent 100%),
-      radial-gradient(ellipse 24rem 8rem at 10% top, #bda9ffb3, #b3d8fd82 48%, transparent 100%),
-      radial-gradient(ellipse 26rem 7rem at 15% top, #ace8ceba, transparent 100%)
+      radial-gradient(ellipse 15rem 6rem at left top in oklch, oklch(89.9% 0.097 77), oklch(83.5% 0.128 339 / 0.537) 44%, oklch(none none none / 0) 100%),
+      radial-gradient(ellipse 24rem 8rem at 10% top in oklch, oklch(79.9% 0.123 295 / 0.702), oklch(86.9% 0.073 249 / 0.51) 48%, oklch(none none none / 0) 100%),
+      radial-gradient(ellipse 26rem 7rem at 15% top in oklch, oklch(88.4% 0.109 166 / 0.729), oklch(none none none / 0) 100%)
     );
   }
 
@@ -155,28 +176,28 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     letter-spacing: .025em;
   }
 
-  :root:has([data-light-demo][data-lit="false"]) {
+  :root[data-lamp="off"] {
     color-scheme: dark;
     background-color: var(--sky);
     --moonlight: 1;
-    --sky: #091221;
-    --paper: #132238;
-    --ink: #edf4ff;
-    --muted-ink: #b9cbe2;
-    --line: #637c9e;
-    --accent: #233952;
-    --focus: #b4d7ff;
-    --mark-light: radial-gradient(circle at 32% 30%, #e5f0ff, #7796bb 72%);
-    --glass-panel: #15263ae8;
-    --glass-control: #35597f50;
-    --glass-control-hover: #476b9680;
-    --glass-control-glint: #b9ddff1c;
-    --glass-edge: #9bc3f077;
-    --glass-glint: #b9ddff29;
+    --sky: oklch(18.22% 0.0339 260.1);
+    --paper: oklch(25.07% 0.0468 257.9);
+    --ink: oklch(96.51% 0.0165 259.4);
+    --muted-ink: oklch(83.58% 0.0378 254.6);
+    --line: oklch(57.99% 0.0602 256.2);
+    --accent: oklch(33.85% 0.0524 252.5);
+    --focus: oklch(86.73% 0.0671 252);
+    --mark-light: radial-gradient(circle at 32% 30% in oklch, oklch(95.13% 0.0234 256.1), oklch(66.35% 0.0654 253.2) 72%);
+    --glass-panel: oklch(26.43% 0.0441 253.4 / 0.91);
+    --glass-control: oklch(45.44% 0.0752 251 / 0.314);
+    --glass-control-hover: oklch(51.95% 0.0801 253.6 / 0.502);
+    --glass-control-glint: oklch(88.29% 0.0606 247 / 0.11);
+    --glass-edge: oklch(80.43% 0.0771 251.7 / 0.467);
+    --glass-glint: oklch(88.29% 0.0606 247 / 0.161);
     --instruction-glow: none;
-    --glass-shadow: 0 14px 38px -20px #000c, 0 3px 12px #050a1457;
-    --shot-surface: #1a2c44;
-    --shot-wash: #426082ad;
+    --glass-shadow: 0 14px 38px -20px oklch(0% 0 0 / 0.8), 0 3px 12px oklch(14.45% 0.024 260.2 / 0.341);
+    --shot-surface: oklch(29.01% 0.0503 256);
+    --shot-wash: oklch(48.04% 0.0657 252.3 / 0.678);
   }
 
   @media (max-width: 48rem) {

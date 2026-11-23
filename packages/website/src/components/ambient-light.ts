@@ -11,12 +11,26 @@ uniform vec2 resolution;
 uniform float intensity;
 uniform float time;
 
+vec3 oklchToLinearP3(float lightness, float chroma, float hue) {
+  float a = chroma * cos(hue);
+  float b = chroma * sin(hue);
+  vec3 lms = lightness + a * vec3(0.3963378, -0.1055613, -0.0894842)
+    + b * vec3(0.2158038, -0.0638542, -1.2914855);
+  lms = lms * lms * lms;
+
+  // Combine the LMS-to-XYZ and XYZ-to-Display-P3 transforms.
+  return mat3(
+    3.127769, -1.091009, -0.026011,
+    -2.257136, 2.413332, -0.508041,
+    0.129367, -0.322323, 1.534052
+  ) * lms;
+}
+
 void main() {
   vec2 p = (gl_FragCoord.xy / resolution - 0.5) * 2.0;
   float alpha = exp(-3.8 * dot(p, p));
-  vec3 rainbow = 0.75 + 0.24 * cos(
-    p.x * 4.0 + p.y * 2.0 + vec3(0.0, 2.094, 4.189)
-  );
+  float hue = 3.7 + p.x * 2.2 + p.y * 1.25;
+  vec3 rainbow = oklchToLinearP3(0.82, 0.105, hue);
   float depth = clamp((-p.y - 0.34) / 0.66, 0.0, 1.0);
   float water = smoothstep(0.0, 0.18, depth) * (1.0 - smoothstep(0.67, 1.0, depth));
   float current = sin(depth * 19.0 - time * 0.75);
@@ -26,18 +40,30 @@ void main() {
   float ripples = 0.5 + 0.5 * sin(depth * 84.0 - time * 2.2 + 2.0 * sin(p.x * 7.0 + depth * 8.0));
   float brokenLight = 0.55 + 0.45 * sin(p.x * 37.0 + depth * 41.0 + time);
   float shimmer = water * reflection * (0.14 + 0.86 * pow(ripples, 5.0)) * brokenLight;
-  vec3 silver = mix(vec3(0.39, 0.58, 0.80), vec3(0.86, 0.93, 1.0), ripples);
+  vec3 silver = oklchToLinearP3(
+    mix(0.66, 0.95, ripples),
+    mix(0.11, 0.027, ripples),
+    radians(mix(252.0, 246.0, ripples))
+  );
 
   float daylight = intensity * alpha * 0.26;
   float moonlight = (1.0 - intensity) * shimmer;
   vec3 color = (daylight * rainbow + moonlight * silver) / max(daylight + moonlight, 0.001);
-  gl_FragColor = vec4(color, daylight + moonlight);
+  vec3 linearColor = clamp(color, 0.0, 1.0);
+  vec3 encodedColor = mix(
+    linearColor * 12.92,
+    1.055 * pow(linearColor, vec3(1.0 / 2.4)) - 0.055,
+    step(vec3(0.0031308), linearColor)
+  );
+  gl_FragColor = vec4(encodedColor, daylight + moonlight);
 }
 `;
 
 export function createAmbientLight(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext('webgl', { premultipliedAlpha: false, antialias: false });
-  if (!gl) return;
+  if (!gl || !('drawingBufferColorSpace' in gl)) return;
+  gl.drawingBufferColorSpace = 'display-p3';
+  if (gl.drawingBufferColorSpace !== 'display-p3') return;
 
   const program = gl.createProgram();
   if (!program) return;

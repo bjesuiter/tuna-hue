@@ -57,7 +57,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
     </li>
   </ol>
 
-  <a class="primary-link glass-control" href={installHref}>Install now <span aria-hidden="true">→</span></a>
+  <a class="primary-link glass-control" href={installHref} data-lamp-link>Install now <span aria-hidden="true">→</span></a>
 
   <section class="help" aria-labelledby="help-title">
     <h2 id="help-title">Bridge setup and troubleshooting</h2>
@@ -112,7 +112,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
     font: 700 .75rem ui-monospace, monospace;
   }
   p { margin-top: .75rem; color: var(--muted-ink); max-width: 65ch; }
-  kbd { border: 1px solid var(--line); border-radius: .25rem; padding: .05em .3em; background: var(--shot-surface, #f7f6fb); }
+  kbd { border: 1px solid var(--line); border-radius: .25rem; padding: .05em .3em; background: var(--shot-surface, oklch(97.53% 0.0067 295.5)); }
   .help { margin-top: 3.5rem; }
   .help h2 { margin-bottom: 1rem; }
   details { border-top: 1px solid var(--line); }

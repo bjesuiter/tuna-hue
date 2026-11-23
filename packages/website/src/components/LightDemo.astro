@@ -1,10 +1,10 @@
-<div class="demo" data-light-demo data-lit="true">
+<div class="demo" data-light-demo>
   <div class="stage">
     <div class="wash" aria-hidden="true"></div>
     <div class="water" aria-hidden="true"></div>
     <canvas aria-hidden="true"></canvas>
     <button class="fixture" type="button" aria-label="Turn Off Living Room lights" disabled>
-      <span class="shade" aria-hidden="true"></span>
+      <span class="shade lamp-transition" aria-hidden="true"></span>
     </button>
   </div>
   <div class="demo-controls">
@@ -40,20 +40,20 @@
     width: 100%;
     height: 100%;
   }
-  .wash { mask-image: radial-gradient(ellipse closest-side, black 30%, transparent 100%); }
-  [data-lit="false"] .wash { opacity: 0; }
+  .wash { mask-image: radial-gradient(ellipse closest-side in oklch, oklch(0% 0 0) 30%, oklch(none none none / 0) 100%); }
+  :global([data-lamp="off"]) .wash { opacity: 0; }
 
   .water {
     position: absolute;
     inset: 57% 4% 3%;
     opacity: 0;
     background:
-      radial-gradient(ellipse 11% 4% at 51% 48%, #e1f1ff5e, transparent),
-      radial-gradient(ellipse 18% 5% at 49% 63%, #b0d6ff63, transparent),
-      radial-gradient(ellipse 25% 4% at 51% 78%, #a4c9f254, transparent),
-      radial-gradient(ellipse 47% 36% at 50% 70%, #608abd38, transparent 100%);
+      radial-gradient(ellipse 11% 4% at 51% 48% in oklch, oklch(95.04% 0.0254 244.4 / 0.369), oklch(none none none / 0)),
+      radial-gradient(ellipse 18% 5% at 49% 63% in oklch, oklch(86.27% 0.0701 250.6 / 0.388), oklch(none none none / 0)),
+      radial-gradient(ellipse 25% 4% at 51% 78% in oklch, oklch(82.33% 0.0703 251.3 / 0.329), oklch(none none none / 0)),
+      radial-gradient(ellipse 47% 36% at 50% 70% in oklch, oklch(62.38% 0.0905 253.9 / 0.22), oklch(none none none / 0) 100%);
   }
-  [data-lit="false"] .water { opacity: 1; }
+  :global([data-lamp="off"]) .water { opacity: 1; }
 
   .fixture {
     position: relative;
@@ -64,36 +64,36 @@
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: transparent;
+    background: oklch(none none none / 0);
     z-index: 1;
   }
   .wash {
     background:
-      radial-gradient(ellipse at 34% 62%, #fdd6b68c, transparent 53%),
-      radial-gradient(ellipse at 65% 55%, #e7cff874, transparent 50%),
-      radial-gradient(ellipse at 79% 72%, #c3e8df70, transparent 45%);
+      radial-gradient(ellipse at 34% 62% in oklch, oklch(89% 0.088 58 / 0.549), oklch(none none none / 0) 53%),
+      radial-gradient(ellipse at 65% 55% in oklch, oklch(88.8% 0.081 311 / 0.455), oklch(none none none / 0) 50%),
+      radial-gradient(ellipse at 79% 72% in oklch, oklch(90% 0.082 175 / 0.439), oklch(none none none / 0) 45%);
   }
   .shade {
     position: relative;
     width: 100%;
-    border: 1px solid #fff9;
+    border: 1px solid oklch(100% 0 0 / 0.6);
     aspect-ratio: 1.06;
     border-radius: 50%;
-    background: radial-gradient(circle at 37% 32%, white 16%, #fcf4ed 48%, #e4cbc5 76%, #c8a9b5 100%);
-    box-shadow: 0 8px 34px #f2ccd078, inset -10px -12px 22px #c2a4b230;
+    background: radial-gradient(circle at 37% 32% in oklch, oklch(100% 0 0) 16%, oklch(97.14% 0.0127 63.9) 48%, oklch(86.13% 0.0294 33.7) 76%, oklch(76.56% 0.0395 352.8) 100%);
+    box-shadow: 0 8px 34px oklch(87.87% 0.0432 10.8 / 0.471), inset -10px -12px 22px oklch(74.94% 0.0398 348.3 / 0.188);
   }
   .shade::after {
     content: '';
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    border: 1px solid #7e9abe88;
-    background: radial-gradient(circle at 33% 25%, #556d87 0%, #253b55 48%, #101b2e 78%);
-    box-shadow: inset 2px 2px 6px #d8ebff99, 0 8px 40px #94bffa35;
+    border: 1px solid oklch(67.81% 0.0622 254.9 / 0.533);
+    background: radial-gradient(circle at 33% 25% in oklch, oklch(52.58% 0.0501 250.8) 0%, oklch(34.66% 0.0537 253.3) 48%, oklch(22.24% 0.0406 260.8) 78%);
+    box-shadow: inset 2px 2px 6px oklch(93.21% 0.0339 249.6 / 0.6), 0 8px 40px oklch(79.58% 0.0962 256.4 / 0.208);
     opacity: 0;
   }
-  [data-lit="false"] .shade { box-shadow: none; }
-  [data-lit="false"] .shade::after { opacity: 1; }
+  :global([data-lamp="off"]) .shade { box-shadow: none; }
+  :global([data-lamp="off"]) .shade::after { opacity: 1; }
 
   .demo-controls { width: min(100%, 23rem); }
   .caption {
@@ -118,7 +118,7 @@
   button:enabled { cursor: pointer; }
   @media (hover: hover) {
     .fixture:enabled:hover .shade { filter: brightness(1.025); }
-    [data-lit="false"] .fixture:enabled:hover .shade { filter: brightness(1.08); }
+    :global([data-lamp="off"]) .fixture:enabled:hover .shade { filter: brightness(1.08); }
   }
   button:enabled:active { filter: brightness(.93); }
   .room { display: grid; line-height: 1.25; }
@@ -135,6 +135,7 @@
 
 <script>
   import { createAmbientLight } from './ambient-light';
+  import { setLamp } from './lamp-state';
 
   for (const demo of document.querySelectorAll<HTMLElement>('[data-light-demo]')) {
     const canvas = demo.querySelector('canvas')!;
@@ -144,13 +145,14 @@
     const status = demo.querySelector('[role="status"]')!;
     const motion = matchMedia('(prefers-reduced-motion: no-preference)');
     const ambient = createAmbientLight(canvas);
-    let lit = true;
+    let lit = document.documentElement.dataset.lamp !== 'off';
     let visible = true;
     let paused = false;
     let frame = 0;
     let lastFrame = 0;
-    let lightLevel = 1;
+    let lightLevel = Number(lit);
     let waterTime = 0;
+    let rippleRate = 1;
 
     function paint() {
       ambient?.draw(lightLevel, waterTime);
@@ -166,7 +168,7 @@
       if (moving) {
         const step = elapsed / 500;
         lightLevel += Math.max(-step, Math.min(step, target - lightLevel));
-        if (!lit) waterTime = (waterTime + elapsed / 1000) % (40 * Math.PI);
+        if (!lit) waterTime = (waterTime + elapsed * rippleRate / 1000) % (40 * Math.PI);
       } else {
         lightLevel = target;
       }
@@ -188,21 +190,30 @@
       }).observe(canvas);
       motion.addEventListener('change', updateScene);
       document.addEventListener('ambient-motion-change', event => {
-        paused = (event as CustomEvent<boolean>).detail;
-        updateScene();
+        const detail = (event as CustomEvent<{ paused: boolean; rippleRate: number }>).detail;
+        rippleRate = detail.rippleRate;
+        if (paused !== detail.paused) {
+          paused = detail.paused;
+          updateScene();
+        }
       });
+    }
+
+    function updateControls() {
+      action.textContent = lit ? 'Turn Off' : 'Turn On';
+      globe.setAttribute('aria-label', `${action.textContent} Living Room lights`);
     }
 
     function toggleLights() {
       lit = !lit;
-      demo.dataset.lit = String(lit);
-      action.textContent = lit ? 'Turn Off' : 'Turn On';
-      globe.setAttribute('aria-label', `${action.textContent} Living Room lights`);
+      setLamp(lit);
+      updateControls();
       status.textContent = lit ? 'Living Room lights are on.' : 'Living Room lights are off.';
 
       updateScene();
     }
 
+    updateControls();
     for (const button of [globe, consoleButton]) {
       button.disabled = false;
       button.addEventListener('click', toggleLights);
