@@ -9,6 +9,7 @@
     "preview": "bun --filter @tuna-hue/website preview",
     "build:plugin": "bun --filter @tuna-hue/plugin build",
     "install:plugin": "bash scripts/install-dev.sh",
-    "install-dev": "bun run build:plugin && bun run install:plugin"
+    "install-dev": "bun run build:plugin && bun run install:plugin",
+    "package:plugin": "bash scripts/package-plugin.sh"
   }
 }

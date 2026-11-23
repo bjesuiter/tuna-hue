@@ -16,6 +16,18 @@ Quit and reopen Tuna after installation or a rebuild. Tuna supplies the TunaKit 
 
 Check **Tuna Settings → Sources** after restarting. **Hue Groups** is the catalog exposed by the extension.
 
+## Package a release for review
+
+With Xcode and a compatible Tuna release installed, run `security find-identity -v -p codesigning` to find your Apple Development identity. Supply its team ID and SHA-1 from the repository root.
+
+```sh
+TUNA_DEVELOPMENT_TEAM=YOUR_TEAM_ID \
+TUNA_CODE_SIGN_IDENTITY=YOUR_IDENTITY_SHA1 \
+bun run package:plugin
+```
+
+The command builds a signed Release framework with Tuna’s pinned upstream packager and writes the `.tunaextension` to `build/package-plugin/`. Set `TUNA_BINARY` if Tuna is installed outside the default search locations. The archive is for review. Tuna’s maintainer handles store signing and publication. [Tuna distribution guide](https://tunaformac.com/docs/extension-distribution)
+
 ## Bridge integration
 
 Tuna Hue Control uses the local Hue CLIP v2 API for rooms, zones, and their grouped lights. It reads group power and device connectivity on catalog scans. **Check Connection** refreshes the selected offline group from its bridge and updates the available actions.
