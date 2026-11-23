@@ -19,31 +19,44 @@ interface Props {
 
 // Thumbnails are at most 30rem wide; render the cropped part at about 2x that.
 const thumbPixels = 960;
-// Bounds include the window's 16px transparent drop shadow. Thumbnails trim it so their
-// edge is the window edge; the preview keeps it.
 const shadow = 16;
+// Leave room for the pastel backdrop and the shadow cast onto it.
+const backdrop = 48;
+
+function expandBounds([x, y, width, height]: Bounds, image: ImageMetadata): Bounds {
+  const left = Math.max(0, x - backdrop);
+  const top = Math.max(0, y - backdrop);
+  const right = Math.min(image.width, x + width + backdrop);
+  const bottom = Math.min(image.height, y + height + backdrop);
+  return [left, top, right - left, bottom - top];
+}
 
 const shots = await Promise.all(Astro.props.shots.map(async shot => {
   const [bx, by, bw, bh] = shot.thumbBounds ?? shot.previewBounds;
-  const [x, y, width, height] = [bx + shadow, by + shadow, bw - 2 * shadow, bh - 2 * shadow];
-  // The capture pipeline gives both appearances the same dimensions and crop.
-  const { light } = shot;
   const variants = await Promise.all((['light', 'dark'] as const).map(async appearance => {
     const image = shot[appearance];
+    const [x, y, width, height] = appearance === 'light'
+      ? expandBounds([bx, by, bw, bh], image)
+      : [bx + shadow, by + shadow, bw - 2 * shadow, bh - 2 * shadow];
     const preview = await getImage({ src: image, format: 'webp', quality: 90 });
-    return { appearance, image, preview: preview.src };
+    return {
+      appearance,
+      image,
+      preview: preview.src,
+      previewBounds: appearance === 'light' ? expandBounds(shot.previewBounds, image) : shot.previewBounds,
+      renderWidth: Math.min(image.width, Math.ceil(thumbPixels * image.width / width)),
+      crop: [
+        `--aspect: ${width / height}`,
+        `--left: ${-100 * x / width}%`,
+        `--top: ${-100 * y / height}%`,
+        `--width: ${100 * image.width / width}%`,
+      ].join('; '),
+    };
   }));
   return {
     ...shot,
-    width,
+    width: bw - 2 * shadow,
     variants,
-    renderWidth: Math.min(light.width, Math.ceil(thumbPixels * light.width / width)),
-    crop: [
-      `--aspect: ${width / height}`,
-      `--left: ${-100 * x / width}%`,
-      `--top: ${-100 * y / height}%`,
-      `--width: ${100 * light.width / width}%`,
-    ].join('; '),
   };
 }));
 
@@ -56,9 +69,9 @@ const widest = Math.max(...shots.map(({ width }) => width));
 ---
 <div class="shots-area">
 <div class:list={['shots', { single: shots.length === 1 }]} style={`--columns: ${columns}`}>
-  {shots.map(({ variants, alt, caption, previewBounds, renderWidth, crop, width }) => (
+  {shots.map(({ variants, alt, caption, width }) => (
     <figure>
-      {variants.map(({ appearance, image, preview }) => (
+      {variants.map(({ appearance, image, preview, previewBounds, renderWidth, crop }) => (
         <a
           class="shot"
           data-appearance={appearance}
@@ -103,7 +116,7 @@ const widest = Math.max(...shots.map(({ width }) => width));
     max-inline-size: min(var(--max-width), calc(var(--aspect) * 24rem));
     aspect-ratio: var(--aspect);
     overflow: hidden;
-    /* Matches the rounded corners of macOS dialogs and Tuna's tile panel. */
+    /* Round the screenshot frame. The light capture includes the window's own corners. */
     border-radius: 2.6% / calc(2.6% * var(--aspect));
     cursor: zoom-in;
   }
