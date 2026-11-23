@@ -4,4 +4,4 @@ Author colors in OKLCH, including palette tokens, gradient interpolation, and sh
 
 # Website layout
 
-Use one framed surface per content group. Keep content inside cards unframed, including code blocks and screenshot wrappers. Use spacing and typography for hierarchy. Keep visible focus indicators on interactive elements.
+Use one framed surface per content group. Keep content inside cards unframed, including code blocks and screenshot wrappers. The agent prompt in the Install page’s “Let your agent build from source” section may have its own border inside the card. Use spacing and typography for hierarchy. Keep visible focus indicators on interactive elements.
