@@ -129,20 +129,42 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
 
   .page { max-width: 90rem; margin-inline: auto; padding-inline: clamp(1.25rem, 5vw, 5rem); }
   header {
+    container: site-header / inline-size;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    min-height: 5rem;
+    min-height: 3.8rem;
     gap: .35rem 1rem;
     padding-block: .55rem;
     border-bottom: 1px solid var(--line);
   }
   header a { text-decoration: none; font-weight: 650; font-size: .875rem; }
   header a:hover { text-decoration: underline; }
-  header nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; flex: 1 1 auto; gap: .35rem clamp(.75rem, 3vw, 1.75rem); }
+  header nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    inline-size: 100%;
+    gap: .5rem clamp(.75rem, 3vw, 1.75rem);
+  }
+  header nav a { white-space: nowrap; }
   header [aria-current="page"] { text-decoration: underline; text-underline-offset: .3em; }
   .github { display: inline-flex; gap: .45rem; align-items: center; }
+  .github svg { flex: none; }
+
+  @container site-header (min-width: 19.5rem) {
+    header nav {
+      flex: 1 1 auto;
+      flex-flow: row wrap;
+      align-items: center;
+      inline-size: auto;
+    }
+  }
+
+  @container site-header (min-width: 34rem) {
+    header nav { justify-content: flex-end; }
+  }
   .brand { display: flex; gap: .35rem; align-items: center; }
   .menu-lamp {
     --lamp-globe-unit: .25rem;
@@ -216,7 +238,7 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     --glass-shadow: 0 14px 38px -20px oklch(0% 0 0 / 0.8), 0 3px 12px oklch(14.45% 0.024 260.2 / 0.341);
   }
 
-  @media (max-width: 48rem) {
-    header { min-height: 3.8rem; }
+  @media (min-width: 48rem) {
+    header { min-height: 5rem; }
   }
 </style>
