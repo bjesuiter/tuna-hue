@@ -5,6 +5,9 @@
     "": {
       "name": "tuna-hue",
     },
+    "packages/hue-mock": {
+      "name": "@tuna-hue/hue-mock",
+    },
     "packages/plugin": {
       "name": "@tuna-hue/plugin",
     },
@@ -205,6 +208,8 @@
     "@shikijs/types": ["@shikijs/types@4.6.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.1.0", "@types/hast": "^3.0.5" } }, "sha512-+ENG1adsKt/X7cRYw1Nl7BEpBmPOjmQ7bR/eGmHuMlT8gtOFf3KEi5l31DJYyAWhW6Y6bjP1plU7FmaxWGENFw=="],
 
     "@shikijs/vscode-textmate": ["@shikijs/vscode-textmate@10.1.0", "", {}, "sha512-cVBuhDQjBZaNMTwBquYfPydrUP+E3hE6oYGasx8h6ZrODIM7/r+gxLDXdd66oszbrggZHEntdE6j+5gYIVyMWQ=="],
+
+    "@tuna-hue/hue-mock": ["@tuna-hue/hue-mock@workspace:packages/hue-mock"],
 
     "@tuna-hue/plugin": ["@tuna-hue/plugin@workspace:packages/plugin"],
 

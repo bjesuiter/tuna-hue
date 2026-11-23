@@ -184,8 +184,19 @@ struct DiscoveredHueBridge: Decodable, Hashable {
   let id: String
   let internalipaddress: String
 
+  static let caPath = ProcessInfo.processInfo.environment["TUNA_HUE_DISCOVERY_CA_PEM"] ?? ""
+
+  private static func certificates() throws -> String {
+    if caPath.isEmpty { return hueRootCertificates }
+    return try String(contentsOfFile: (caPath as NSString).expandingTildeInPath, encoding: .utf8)
+  }
+
+  func pairingClient() throws -> HueBridge {
+    try HueBridge(address: internalipaddress, id: id.lowercased(), caPEM: Self.certificates())
+  }
+
   func displayName() async -> String {
-    if let client = try? HueBridge(address: internalipaddress, id: id.lowercased(), caPEM: hueRootCertificates),
+    if let client = try? pairingClient(),
        let name = try? await client.name(), !name.isEmpty {
       return name
     }
@@ -193,10 +204,25 @@ struct DiscoveredHueBridge: Decodable, Hashable {
   }
 
   static func discover() async throws -> [Self] {
-    let url = URL(string: "https://discovery.meethue.com")!
-    let (data, response) = try await URLSession.shared.data(
-      for: URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 8)
-    )
+    let endpoint = ProcessInfo.processInfo.environment["TUNA_HUE_DISCOVERY_URL"]
+    guard let url = URL(string: endpoint ?? "https://discovery.meethue.com"),
+          url.scheme?.lowercased() == "https", url.host?.isEmpty == false,
+          url.user == nil, url.password == nil else {
+      throw HueError.configuration("Set the Hue discovery endpoint to an HTTPS URL.")
+    }
+    guard endpoint != nil || caPath.isEmpty else {
+      throw HueError.configuration("Set a custom discovery endpoint when supplying a discovery CA.")
+    }
+    let session: URLSession
+    if endpoint != nil {
+      let trust = caPath.isEmpty ? nil : try HueTrust(bridgeID: nil, caPEM: certificates())
+      session = URLSession(configuration: .ephemeral, delegate: trust, delegateQueue: nil)
+    } else {
+      session = .shared
+    }
+    defer { if endpoint != nil { session.finishTasksAndInvalidate() } }
+    let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 8)
+    let (data, response) = try await session.data(for: request)
     guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw HueError.response }
     return Array(Set(try JSONDecoder().decode([Self].self, from: data))).sorted { $0.id < $1.id }
   }
@@ -276,10 +302,10 @@ private struct Power: Encodable {
 }
 
 private final class HueTrust: NSObject, URLSessionTaskDelegate, Sendable {
-  private let bridgeID: String
+  private let bridgeID: String?
   private let anchors: [SecCertificate]
 
-  init(bridgeID: String, caPEM: String) throws {
+  init(bridgeID: String?, caPEM: String) throws {
     self.bridgeID = bridgeID
     let pattern = /-----BEGIN CERTIFICATE-----([A-Za-z0-9+\/=\s]+)-----END CERTIFICATE-----/
     anchors = caPEM.matches(of: pattern).compactMap { match in
@@ -298,26 +324,31 @@ private final class HueTrust: NSObject, URLSessionTaskDelegate, Sendable {
   ) {
     // Hue bridge certificates can outlive the SSL policy limit. Check the chain against
     // the dedicated Hue roots and match the bridge ID in the leaf instead.
+    let policy = bridgeID == nil
+      ? SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString)
+      : SecPolicyCreateBasicX509()
     guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
           let trust = challenge.protectionSpace.serverTrust,
-          SecTrustSetPolicies(trust, SecPolicyCreateBasicX509()) == errSecSuccess,
+          SecTrustSetPolicies(trust, policy) == errSecSuccess,
           SecTrustSetAnchorCertificates(trust, anchors as CFArray) == errSecSuccess,
           SecTrustSetAnchorCertificatesOnly(trust, true) == errSecSuccess,
           SecTrustSetNetworkFetchAllowed(trust, false) == errSecSuccess,
           SecTrustEvaluateWithError(trust, nil),
-          let leaf = (SecTrustCopyCertificateChain(trust) as? [SecCertificate])?.first,
-          matchesBridgeID(leaf) else {
+          bridgeID.map({ id in
+            guard let leaf = (SecTrustCopyCertificateChain(trust) as? [SecCertificate])?.first else { return false }
+            return matchesBridgeID(leaf, id: id)
+          }) ?? true else {
       completionHandler(.cancelAuthenticationChallenge, nil)
       return
     }
     completionHandler(.useCredential, URLCredential(trust: trust))
   }
 
-  private func matchesBridgeID(_ certificate: SecCertificate) -> Bool {
+  private func matchesBridgeID(_ certificate: SecCertificate, id: String) -> Bool {
     // Hue bridge certificates can carry the bridge ID only in the subject common name.
     var commonName: CFString?
     return SecCertificateCopyCommonName(certificate, &commonName) == errSecSuccess
-      && (commonName as String?)?.lowercased() == bridgeID
+      && (commonName as String?)?.lowercased() == id
   }
 
   func urlSession(

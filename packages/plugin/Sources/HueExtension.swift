@@ -83,7 +83,7 @@ private enum HuePairing {
       let id = bridge.id.lowercased()
       try HueConnections.requireNew(id)
       let address = bridge.internalipaddress
-      let client = try HueBridge(address: address, id: id, caPEM: hueRootCertificates)
+      let client = try bridge.pairingClient()
       prompt.showPairing(for: name)
       while true {
         try Task.checkCancellation()
@@ -96,7 +96,9 @@ private enum HuePairing {
         }
         try Task.checkCancellation()
         prompt.showVerification()
-        return try await HueConnections.add(address: address, id: id, key: key, path: "")
+        return try await HueConnections.add(
+          address: address, id: id, key: key, path: DiscoveredHueBridge.caPath
+        )
       }
     }
     prompt.cancelPairing = { pairing.cancel() }
