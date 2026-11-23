@@ -1,0 +1,44 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+body {
+  --ink: oklch(19.91% 0.01 294.6);
+  --muted-ink: oklch(46.15% 0.0243 294.6);
+  --glass-edge: oklch(61.83% 0.0531 258 / 0.329);
+  --glass-glint: oklch(100% 0 0 / 0.733);
+  font-family: 'Avenir Next', system-ui, sans-serif;
+  color: var(--ink);
+  background: oklch(100% 0 0);
+  position: relative;
+  isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+}
+.label { font: 650 25px/1.3 ui-monospace, 'SF Mono', monospace; letter-spacing: .06em; text-transform: uppercase; }
+.field { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.glow { position: absolute; width: 900px; height: 700px;
+  background: radial-gradient(ellipse closest-side in oklch, var(--light) 0%, color-mix(in oklch, var(--light) 78%, oklch(none none none / 0)) 32%, color-mix(in oklch, var(--light) 24%, oklch(none none none / 0)) 69%, oklch(none none none / 0) 100%); }
+.peach { --light: oklch(82.5% 0.132 44 / 0.733); }
+.lilac { --light: oklch(75.5% 0.167 303 / 0.753); }
+.mint { --light: oklch(82.9% 0.145 171 / 0.69); }
+.blue { --light: oklch(80.1% 0.111 254 / 0.769); }
+.gold { --light: oklch(89% 0.116 92 / 0.6); }
+.shade {
+  position: relative; display: block; aspect-ratio: 1.06; border-radius: 50%;
+  border: 1px solid oklch(100% 0 0 / 0.6);
+  background: radial-gradient(circle at 37% 32% in oklch, oklch(100% 0 0) 16%, oklch(97.14% 0.0127 63.9) 48%, oklch(86.13% 0.0294 33.7) 76%, oklch(76.56% 0.0395 352.8) 100%);
+  box-shadow: 0 8px 34px oklch(87.87% 0.0432 10.8 / 0.471), inset -10px -12px 22px oklch(74.94% 0.0398 348.3 / 0.188);
+}
+.shade.off {
+  border-color: oklch(67.81% 0.0622 254.9 / 0.533);
+  background: radial-gradient(circle at 33% 25% in oklch, oklch(52.58% 0.0501 250.8) 0%, oklch(34.66% 0.0537 253.3) 48%, oklch(22.24% 0.0406 260.8) 78%);
+  box-shadow: inset 2px 2px 6px oklch(93.21% 0.0339 249.6 / 0.6), 0 8px 40px oklch(79.58% 0.0962 256.4 / 0.208);
+}
+.brand { display: flex; align-items: center; gap: 16px; font-weight: 700; font-size: 38px; letter-spacing: -.02em; }
+.brand img { width: 60px; height: 60px; }
+h1 { margin: 0; font-weight: 700; letter-spacing: -.055em; line-height: .96; text-wrap: balance; }
+.glass {
+  border: 1.5px solid var(--glass-edge);
+  background-color: oklch(96.78% 0.0153 257.2 / 0.4);
+  background-image: linear-gradient(155deg in oklch, var(--glass-glint), oklch(none none none / 0) 58%);
+  box-shadow: inset 0 1px 0 var(--glass-glint), 0 16px 38px -26px oklch(48.11% 0.0813 263.7 / 0.451), 0 3px 12px oklch(60.94% 0.0706 263.4 / 0.141);
+  backdrop-filter: blur(12px) saturate(1.25);
+}

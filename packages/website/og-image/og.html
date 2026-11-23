@@ -1,0 +1,93 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.g1 { left: -360px; top: -300px; } .g2 { left: 560px; top: -260px; } .g3 { right: -420px; top: 60px; }
+.g4 { left: 300px; top: 330px; } .g5 { left: -420px; top: 220px; }
+main { position: absolute; inset: 0; padding: 56px 40px 56px 64px; display: grid; grid-template-columns: 1fr 580px; gap: 32px; align-items: center; }
+.copy { display: flex; flex-direction: column; height: 100%; }
+h1 { font-size: 92px; margin-top: auto; }
+.copy .label { color: var(--muted-ink); margin: 28px 0 0; font-size: 23px; white-space: nowrap; }
+
+/* Tuna launcher, proportions taken from the 2x screenshots */
+.tuna { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; color: oklch(0% 0 0); display: grid; justify-items: center; gap: 14px; }
+.win { width: 580px; padding: 17px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  border-radius: 46px; background: linear-gradient(170deg in oklch, oklch(91.5% 0.006 265), oklch(87.5% 0.008 265));
+  border: 1.5px solid oklch(100% 0 0 / .55);
+  box-shadow: inset 0 0 0 1px oklch(80% 0.008 265 / .7), inset 0 1.5px 0 oklch(100% 0 0 / .8), 0 24px 50px -20px oklch(30% 0.02 260 / .45), 0 4px 14px oklch(40% 0.02 260 / .15); }
+.tile { height: 236px; border-radius: 30px; display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: end; padding: 0 16px 28px; position: relative; text-align: center; }
+.tile.sel { background: oklch(85.5% 0.048 250); border: 1.5px solid oklch(63% 0.16 255); box-shadow: inset 0 1.5px 0 oklch(100% 0 0 / .45); }
+.tile.act { background: oklch(95.5% 0.004 265); border: 1.5px solid oklch(83% 0.008 265); box-shadow: inset 0 1.5px 0 oklch(100% 0 0 / .9), 0 2px 6px -3px oklch(50% 0.02 265 / .25); }
+.tile > svg { align-self: center; margin-top: 18px; }
+.tile .name { font-size: 29px; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; white-space: nowrap; }
+.tile .sub { display: block; margin-top: 6px; font-size: 20px; font-weight: 600; color: oklch(28% 0.06 250); text-decoration: underline; text-underline-offset: 3px; }
+.key { position: absolute; right: 14px; bottom: 14px; width: 46px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; line-height: 0;
+  border: 1.5px solid oklch(84% 0.008 265); background: oklch(91% 0.005 265); color: oklch(30% 0 0); }
+.key svg { display: block; }
+.results { width: 536px; border-radius: 20px; background: oklch(94.5% 0.005 270); overflow: hidden;
+  border: 1px solid oklch(100% 0 0 / .6);
+  box-shadow: 0 20px 40px -22px oklch(30% 0.02 260 / .45), 0 3px 10px oklch(40% 0.02 260 / .12); }
+.rhead { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 10px 18px; border-bottom: 1.5px solid oklch(87% 0.006 270); }
+.rhead b { font-size: 20px; font-weight: 600; }
+.chips { display: flex; gap: 6px; }
+.chip { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 11px; border-radius: 14px; border: 1.5px solid oklch(85% 0.006 270); background: oklch(97.5% 0.003 270); font-size: 17px; font-weight: 600; color: oklch(22% 0 0); }
+.row { display: flex; align-items: center; gap: 14px; padding: 12px 18px; }
+.row + .row { padding-top: 2px; }
+.row svg { flex: none; }
+.rt { display: grid; line-height: 1.2; }
+.rt strong { font-size: 24px; font-weight: 600; letter-spacing: -.005em; }
+.rt small { font-size: 18px; font-weight: 500; color: oklch(40% 0 0); }
+</style></head><body>
+<div class="field"><span class="glow peach g1"></span><span class="glow lilac g2"></span><span class="glow mint g3"></span><span class="glow blue g4"></span><span class="glow gold g5"></span></div>
+<main>
+  <div class="copy">
+    <div class="brand"><img src="../public/favicon.svg" alt="">Tuna Hue Control</div>
+    <h1>Lights at your fingertips.</h1>
+    <p class="label">Philips Hue · Tuna for macOS</p>
+  </div>
+  <div class="tuna">
+    <div class="win">
+      <div class="tile sel">
+        <!-- two bulbs, back one faded -->
+        <svg width="96" height="96" viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke="oklch(75.3% 0.172 56 / .55)" stroke-width="2">
+            <path d="M13 29.5c0-3.8-5.2-6.6-5.2-13.2a8.6 8.6 0 0 1 17.2 0c0 6.6-5.2 9.4-5.2 13.2z"/>
+            <path d="M13.4 33h6.2M13.9 36h5.2"/>
+          </g>
+          <g stroke="oklch(75.3% 0.172 56)" stroke-width="2.4">
+            <path d="M27 30.5c0-4-5.6-6.9-5.6-13.8a9.6 9.6 0 0 1 19.2 0c0 6.9-5.6 9.8-5.6 13.8z" fill="oklch(85.5% 0.048 250)"/>
+            <path d="M27.2 34.5h7.6M27.6 38h6.8"/>
+          </g>
+          <path d="M28 41h6a3 3 0 0 1-6 0z" fill="oklch(75.3% 0.172 56)"/>
+        </svg>
+        <div><div class="name">Living Room</div><span class="sub">Hue</span></div>
+      </div>
+      <div class="tile act">
+        <svg width="96" height="96" viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke="oklch(55% 0 0)" stroke-width="2.4">
+            <path d="M19.6 30.5c0-4-5.6-6.9-5.6-13.8a10 10 0 0 1 20 0c0 6.9-5.6 9.8-5.6 13.8z"/>
+            <path d="M19.8 34.5h8.4M20.3 38h7.4"/>
+          </g>
+          <path d="M20.8 41h6.4a3.2 3.2 0 0 1-6.4 0z" fill="oklch(55% 0 0)"/>
+          <path d="M10 6l28 30" stroke="oklch(25% 0 0)" stroke-width="2.6"/>
+        </svg>
+        <div class="name">Turn Off</div>
+        <span class="key"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 3.5v4a2 2 0 0 1-2 2h-7M6.5 6.5l-3 3 3 3"/></svg></span>
+      </div>
+    </div>
+    <div class="results">
+      <div class="rhead"><b>24 results</b>
+        <div class="chips">
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M8 0l1.3 4.2L13.5 5.5 9.3 6.8 8 11 6.7 6.8 2.5 5.5l4.2-1.3z"/><path d="M2.5 9.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/></svg>⌃S</span>
+          <span class="chip"><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 1.5h7v3a3.5 3.5 0 0 1-7 0z" fill="currentColor"/><path d="M6 8v3.5M3.5 12.5h5M17 1.5v11M14 9.5l3 3 3-3"/></svg>⌃O</span>
+        </div>
+      </div>
+      <div class="row">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="oklch(30% 0 0)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 13A8 8 0 1 0 6 6.5"/><path d="M2.5 7.5l3.5-1 1 3.5"/><path d="M12 8v4.5l3 2"/></svg>
+        <span class="rt"><strong>Living Room — Turn Off</strong><small>Living Room · Turn Off · in 0 sec</small></span>
+      </div>
+      <div class="row">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="oklch(30% 0 0)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 13A8 8 0 1 0 6 6.5"/><path d="M2.5 7.5l3.5-1 1 3.5"/><path d="M12 8v4.5l3 2"/></svg>
+        <span class="rt"><strong>Kitchen — Turn On</strong><small>Kitchen · Turn On · 3 min ago</small></span>
+      </div>
+    </div>
+  </div>
+</main>
+</body></html>

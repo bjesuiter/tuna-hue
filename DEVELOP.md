@@ -50,3 +50,8 @@ repository root. Open `http://localhost:4321/tuna-hue/`. Run
 `bgproc stop -n tuna-hue-website` to stop the server. The static build command is `bun run build`,
 which writes to `packages/website/dist`. Run `bun run preview` to serve that build
 locally. The Astro config uses the repository GitHub Pages path.
+
+The link preview image `packages/website/public/og.png` is rendered from
+`packages/website/og-image/og.html`. After editing it, run
+`bun run --filter @tuna-hue/website og-image` (needs the `agent-browser` CLI) and
+commit the new PNG.
