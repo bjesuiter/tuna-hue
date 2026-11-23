@@ -1,4 +1,32 @@
 ---
+import { Code } from 'astro:components';
+import type { ShikiTransformer, ThemeRegistration } from 'shiki';
+
+// Token colours come from the --code-* custom properties below, so the lamp switch recolours them.
+const codeTheme: ThemeRegistration = {
+  name: 'tuna-hue',
+  colors: { 'editor.foreground': 'inherit', 'editor.background': 'transparent' },
+  tokenColors: [
+    { scope: ['keyword.control', 'storage'], settings: { foreground: 'var(--code-keyword)' } },
+    { scope: ['string.quoted'], settings: { foreground: 'var(--code-string)' } },
+    { scope: ['constant.other.option', 'constant.numeric', 'variable.other.assignment'], settings: { foreground: 'var(--code-variable)' } },
+    { scope: ['comment'], settings: { foreground: 'var(--code-comment)' } },
+  ],
+};
+
+// Emit only <code class="language-bash"> with token spans, so each snippet sits in the page's own <pre>.
+const bareCode: ShikiTransformer = {
+  root(root) {
+    const pre = root.children.find((node) => node.type === 'element');
+    const code = pre?.type === 'element' ? pre.children.find((node) => node.type === 'element') : undefined;
+    if (code?.type !== 'element') return;
+    root.children = [{ type: 'element', tagName: 'code', properties: { class: 'language-bash' }, children: code.children }];
+  },
+  span(node) {
+    if (node.properties.style === 'color:inherit') delete node.properties.style;
+  },
+};
+
 const fetchSource = `git clone "https://github.com/bjesuiter/tuna-hue.git"
 cd tuna-hue`;
 
@@ -20,7 +48,7 @@ const agentInstructions = 'Build and install Tuna Hue Control on this Mac. Check
 const agentFollowUp = 'Tell me when the framework is installed and show me any errors you encounter. I’ll restart Tuna, make the trust decision if prompted, and pair my Hue Bridge with Connect First Hue Bridge.';
 ---
 
-<article class="guide page-content" aria-labelledby="install-title" data-install-guide>
+<article class="guide page-content" aria-labelledby="install-title">
   <h1 id="install-title">Install Tuna Hue Control</h1>
 
   <section class="install-card card glass-panel glass-rainbow" aria-labelledby="store-title">
@@ -45,7 +73,7 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
       Copy this prompt into a coding agent with Terminal access on the Mac where you use Tuna.
       <span id="copy-prompt-status" role="status"></span>
     </p>
-    <pre id="agent-prompt" class="agent-prompt" tabindex="0" aria-label="Prompt for your coding agent">{agentInstructions}{'\n\n'}<code class="language-bash">{fetchSource}</code>{'\n\n'}<code class="language-bash">{buildExtension}</code>{'\n\n'}<code class="language-bash">{installExtension}</code>{'\n\n'}{agentFollowUp}</pre>
+    <pre id="agent-prompt" class="agent-prompt" tabindex="0" aria-label="Prompt for your coding agent">{agentInstructions}{'\n\n'}<Code code={fetchSource} lang="bash" theme={codeTheme} transformers={[bareCode]} />{'\n\n'}<Code code={buildExtension} lang="bash" theme={codeTheme} transformers={[bareCode]} />{'\n\n'}<Code code={installExtension} lang="bash" theme={codeTheme} transformers={[bareCode]} />{'\n\n'}{agentFollowUp}</pre>
   </section>
 
   <section class="source install-card card glass-panel glass-rainbow" aria-labelledby="build-from-source">
@@ -66,20 +94,20 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
         <span class="number label" aria-hidden="true">01</span>
         <h3>Get the source</h3>
         <p>Open Terminal and run these commands to download the source and enter its folder.</p>
-        <pre tabindex="0" aria-label="Download the source"><code class="language-bash">{fetchSource}</code></pre>
+        <pre tabindex="0" aria-label="Download the source"><Code code={fetchSource} lang="bash" theme={codeTheme} transformers={[bareCode]} /></pre>
       </li>
       <li>
         <span class="number label" aria-hidden="true">02</span>
         <h3>Build the extension</h3>
         <p>Run this in the same Terminal window. Xcode downloads the pinned TunaKit dependency on the first build.</p>
-        <pre tabindex="0" aria-label="Build the extension with Xcode"><code class="language-bash">{buildExtension}</code></pre>
+        <pre tabindex="0" aria-label="Build the extension with Xcode"><Code code={buildExtension} lang="bash" theme={codeTheme} transformers={[bareCode]} /></pre>
         <p>If Terminal reports that the active developer directory points to Command Line Tools, select your full Xcode installation under <strong>Xcode → Settings → Locations → Command Line Tools</strong> and rerun the build.</p>
       </li>
       <li>
         <span class="number label" aria-hidden="true">03</span>
         <h3>Copy the extension to Tuna</h3>
         <p>After the build succeeds, create Tuna’s developer extensions folder and copy the framework into it.</p>
-        <pre tabindex="0" aria-label="Copy the framework into Tuna’s developer extensions folder"><code class="language-bash">{installExtension}</code></pre>
+        <pre tabindex="0" aria-label="Copy the framework into Tuna’s developer extensions folder"><Code code={installExtension} lang="bash" theme={codeTheme} transformers={[bareCode]} /></pre>
       </li>
       <li>
         <span class="number label" aria-hidden="true">04</span>
@@ -94,6 +122,10 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
 
 <style>
   .guide {
+    --code-keyword: light-dark(oklch(40% .14 302), oklch(84% .09 302));
+    --code-string: light-dark(oklch(38% .09 158), oklch(85% .10 158));
+    --code-variable: light-dark(oklch(41% .13 249), oklch(84% .10 249));
+    --code-comment: var(--muted-ink);
     max-inline-size: 56rem;
     margin-inline: auto;
   }
@@ -127,15 +159,8 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
     overflow: auto;
     font: var(--text-s)/1.65 var(--font-mono);
   }
-  code { font: inherit; }
-  code::highlight(function),
-  code::highlight(support),
-  code::highlight(keyword) { color: light-dark(oklch(40% .14 302), oklch(84% .09 302)); }
-  code::highlight(string) { color: light-dark(oklch(38% .09 158), oklch(85% .10 158)); }
-  code::highlight(variable),
-  code::highlight(constant),
-  code::highlight(numeric) { color: light-dark(oklch(41% .13 249), oklch(84% .10 249)); }
-  code::highlight(comment) { color: var(--muted-ink); }
+  /* Shiki renders the <code> elements, so they carry no scoped-style attribute. */
+  pre :global(code) { font: inherit; }
   .agent-prompt {
     padding-block: var(--space-xs);
     padding-inline: var(--space-s);
@@ -154,8 +179,6 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
 </style>
 
 <script>
-  import { highlightAll } from 'microlighter';
-
   const prompt = document.getElementById('agent-prompt');
   const button = document.querySelector<HTMLButtonElement>('.copy-prompt');
   const status = document.getElementById('copy-prompt-status');
@@ -183,7 +206,4 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
     }
     button.hidden = false;
   }
-
-  const guide = document.querySelector('[data-install-guide]');
-  if (guide && CSS.highlights) await highlightAll({ root: guide });
 </script>

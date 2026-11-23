@@ -28,7 +28,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
         <p>If the command is missing, set <strong>Sources → Hue Groups → In global search</strong> to <strong>All</strong>.</p>
       </div>
       <JourneyShots shots={[
-        { image: findCommand, crop: 'tiles', previewBounds: [328, 112, 928, 496], alt: 'Connect First Hue Bridge selected in Tuna search.' },
+        { image: findCommand, previewBounds: [328, 112, 928, 496], alt: 'Connect First Hue Bridge selected in Tuna search.' },
       ]} />
     </li>
 
@@ -53,7 +53,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
       </div>
       <JourneyShots shots={[
         { image: turnOn, previewBounds: [19, 4, 928, 491], alt: 'A bedroom selected with the Turn On action.', caption: 'Turn on a room' },
-        { image: turnOff, crop: true, previewBounds: [328, 112, 928, 1428], alt: 'A living-room group selected with the Turn Off action.', caption: 'Turn off a group' },
+        { image: turnOff, thumbBounds: [328, 112, 928, 496], previewBounds: [328, 112, 928, 1428], alt: 'A living-room group selected with the Turn Off action.', caption: 'Turn off a group' },
       ]} />
     </li>
   </ol>
@@ -62,28 +62,48 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
 
   <section class="help" aria-labelledby="help-title">
     <h2 id="help-title">Bridge setup and troubleshooting</h2>
-    <details>
-      <summary>My bridge doesn’t appear</summary>
-      <p>Choose <strong>Refresh</strong> in the bridge picker. You can also select <strong>Enter IP Address…</strong> and supply the local address, bridge ID, and Hue application key.</p>
-      <JourneyShots shots={[
-        { image: manual, previewBounds: [96, 60, 736, 981], alt: 'Manual Connect Bridge form with blank address, bridge ID, optional certificate path, and application key fields.', caption: 'Enter bridge details manually' },
-      ]} />
-    </details>
-    <details>
-      <summary>My lights show as offline</summary>
-      <p>Choose <strong>Check Connection</strong> to fetch the latest status. Power actions return when at least one light in the group is reachable.</p>
-      <JourneyShots shots={[
-        { image: checkConnection, crop: true, previewBounds: [328, 112, 928, 1428], alt: 'A kitchen room selected with the Check Connection action.', caption: 'Refresh the room’s connection status' },
-      ]} />
-    </details>
-    <details>
-      <summary>I want to add or disconnect a bridge</summary>
-      <p>Run <strong>Add Hue Bridge</strong> to connect another bridge. To remove one, run <strong>Manage Hue Bridges</strong>, select the bridge, and confirm <strong>Disconnect</strong>. Tuna removes its saved application key from this Mac.</p>
-      <JourneyShots shots={[
-        { image: manageBridges, previewBounds: [96, 60, 816, 521], alt: 'Manage Hue Bridges dialog with a connected bridge selected.', caption: 'Select the bridge to remove' },
-        { image: disconnect, previewBounds: [96, 60, 552, 501], alt: 'Disconnect confirmation explaining that Tuna removes the saved application key.', caption: 'Confirm disconnect' },
-      ]} />
-    </details>
+    <div class="faq card glass-panel glass-rainbow">
+      <details>
+        <summary>
+          <span class="label" aria-hidden="true">Q1</span>
+          <span class="question">My bridge doesn’t appear</span>
+          <span class="indicator" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </summary>
+        <div class="answer">
+          <p>Choose <strong>Refresh</strong> in the bridge picker. You can also select <strong>Enter IP Address…</strong> and supply the local address, bridge ID, and Hue application key.</p>
+          <JourneyShots shots={[
+            { image: manual, previewBounds: [96, 60, 736, 981], alt: 'Manual Connect Bridge form with blank address, bridge ID, optional certificate path, and application key fields.', caption: 'Enter bridge details manually' },
+          ]} />
+        </div>
+      </details>
+      <details>
+        <summary>
+          <span class="label" aria-hidden="true">Q2</span>
+          <span class="question">My lights show as offline</span>
+          <span class="indicator" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </summary>
+        <div class="answer">
+          <p>Choose <strong>Check Connection</strong> to fetch the latest status. Power actions return when at least one light in the group is reachable.</p>
+          <JourneyShots shots={[
+            { image: checkConnection, thumbBounds: [328, 112, 928, 496], previewBounds: [328, 112, 928, 1428], alt: 'A kitchen room selected with the Check Connection action.', caption: 'Refresh the room’s connection status' },
+          ]} />
+        </div>
+      </details>
+      <details>
+        <summary>
+          <span class="label" aria-hidden="true">Q3</span>
+          <span class="question">I want to add or disconnect a bridge</span>
+          <span class="indicator" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </summary>
+        <div class="answer">
+          <p>Run <strong>Add Hue Bridge</strong> to connect another bridge. To remove one, run <strong>Manage Hue Bridges</strong>, select the bridge, and confirm <strong>Disconnect</strong>. Tuna removes its saved application key from this Mac.</p>
+          <JourneyShots shots={[
+            { image: manageBridges, previewBounds: [96, 60, 816, 521], alt: 'Manage Hue Bridges dialog with a connected bridge selected.', caption: 'Select the bridge to remove' },
+            { image: disconnect, previewBounds: [96, 60, 552, 501], alt: 'Disconnect confirmation explaining that Tuna removes the saved application key.', caption: 'Confirm disconnect' },
+          ]} />
+        </div>
+      </details>
+    </div>
   </section>
 </section>
 <JourneyImagePreview />
@@ -102,14 +122,51 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
   p { margin-top: var(--space-xs); color: var(--muted-ink); max-width: 65ch; }
   kbd { color: var(--ink); font-weight: var(--weight-semibold); }
   .help { margin-top: var(--section-gap); }
-  .help h2 { margin-bottom: var(--space-s); }
-  details { border-top: 1px solid var(--line); }
-  details:last-child { border-bottom: 1px solid var(--line); }
-  summary { padding-block: var(--space-s); font-weight: var(--weight-semibold); cursor: pointer; }
-  details p { margin: 0 0 var(--space-s); }
-  details :global(.shots) { margin-bottom: var(--space-m); }
-  /* Steps need more room than the site-wide 48rem breakpoint to sit beside screenshots. */
+  .help h2 { margin-bottom: var(--space-m); }
+  .faq { --faq-marker: 2rem; padding-block: var(--space-2xs); }
+  details + details { border-top: 1px solid var(--line); }
+  summary {
+    display: grid;
+    grid-template-columns: var(--faq-marker) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-xs);
+    min-block-size: calc(var(--tap-target) + var(--space-s));
+    /* Inline padding with matching negative margin keeps the focus ring off the text. */
+    margin-inline: calc(-1 * var(--space-2xs));
+    padding: var(--space-xs) var(--space-2xs);
+    list-style: none;
+    border-radius: var(--space-2xs);
+    cursor: pointer;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:focus-visible { outline-offset: 2px; }
+  summary .label { color: var(--muted-ink); }
+  .question { font-size: var(--text-l); font-weight: var(--weight-semibold); line-height: 1.3; }
+  summary:hover .question { text-decoration: underline; text-underline-offset: .2em; }
+  .indicator {
+    display: grid;
+    place-items: center;
+    inline-size: var(--tap-target);
+    block-size: var(--tap-target);
+    border: 1px solid var(--glass-edge);
+    border-radius: 50%;
+    background-color: var(--glass-control);
+    box-shadow: inset 0 1px 0 var(--glass-control-glint);
+  }
+  summary:hover .indicator { background-color: var(--glass-control-hover); }
+  details[open] .indicator svg { rotate: 180deg; }
+  @media (prefers-reduced-motion: no-preference) {
+    .indicator svg { transition: rotate .2s ease; }
+  }
+  .answer {
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--space-3xs) 0 var(--space-l) calc(var(--faq-marker) + var(--space-xs));
+  }
+  .answer p { margin: 0; }
+  /* Steps and answers need more room than the site-wide 48rem breakpoint to sit beside screenshots. */
   @media (min-width: 52rem) {
     li { grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.4fr); }
+    .answer { grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.4fr); align-items: start; column-gap: var(--space-xl); }
   }
 </style>

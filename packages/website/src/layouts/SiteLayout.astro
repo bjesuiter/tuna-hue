@@ -26,6 +26,8 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <link rel="icon" href={base + '/favicon.svg'} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={base + '/apple-touch-icon.png'} />
     <script is:inline>
       if (new URLSearchParams(location.search).get('lamp') === 'off') {
         document.documentElement.dataset.lamp = 'off';

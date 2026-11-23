@@ -1,65 +1,117 @@
 ---
-import { Image } from 'astro:assets';
+import { getImage, Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+
+type Bounds = [x: number, y: number, width: number, height: number];
 
 interface Props {
   shots: {
     image: ImageMetadata;
     alt: string;
     caption?: string;
-    crop?: boolean | 'tiles';
-    previewBounds?: [x: number, y: number, width: number, height: number];
+    /** The part of the screenshot the preview dialog shows, in image pixels. */
+    previewBounds: Bounds;
+    /** The part shown on the page, when it differs from `previewBounds`. */
+    thumbBounds?: Bounds;
   }[];
 }
 
-const { shots } = Astro.props;
+// Thumbnails are at most 36rem wide; render the cropped part at about 2x that.
+const thumbPixels = 1152;
+// Bounds include the window's 16px transparent drop shadow. Thumbnails trim it so their
+// edge is the window edge; the preview keeps it.
+const shadow = 16;
+
+const shots = await Promise.all(Astro.props.shots.map(async shot => {
+  const [bx, by, bw, bh] = shot.thumbBounds ?? shot.previewBounds;
+  const [x, y, width, height] = [bx + shadow, by + shadow, bw - 2 * shadow, bh - 2 * shadow];
+  const { image } = shot;
+  const preview = await getImage({ src: image, format: 'webp', quality: 90 });
+  return {
+    ...shot,
+    width,
+    preview: preview.src,
+    renderWidth: Math.min(image.width, Math.ceil(thumbPixels * image.width / width)),
+    crop: [
+      `--aspect: ${width / height}`,
+      `--left: ${-100 * x / width}%`,
+      `--top: ${-100 * y / height}%`,
+      `--width: ${100 * image.width / width}%`,
+    ].join('; '),
+  };
+}));
+
+// Columns as wide as each cropped screenshot, so a row shows every UI at the same scale.
+// Stacked on narrow screens, each keeps its width relative to the widest one.
+const columns = shots.map(({ width }) => `${width}fr`).join(' ');
+const widest = Math.max(...shots.map(({ width }) => width));
 ---
-<div class="shots">
-  {shots.map(({ image, alt, caption, crop, previewBounds }) => (
+<div class="shots-area">
+<div class:list={['shots', { single: shots.length === 1 }]} style={`--columns: ${columns}`}>
+  {shots.map(({ image, alt, caption, preview, previewBounds, renderWidth, crop, width }) => (
     <figure>
       <a
-        class:list={['shot', { crop, 'tiles-only': crop === 'tiles' }]}
-        href={image.src}
+        class="shot"
+        style={`${crop}; --share: ${width / widest}`}
+        href={preview}
         data-image-preview
         data-image-width={image.width}
         data-image-height={image.height}
-        data-preview-bounds={previewBounds?.join(' ')}
+        data-preview-bounds={previewBounds.join(' ')}
         aria-label={`Open screenshot preview. ${alt}`}
       >
-        <Image src={image} alt={alt} width={Math.min(960, image.width)} loading="lazy" />
+        <Image src={image} alt={alt} width={renderWidth} loading="lazy" />
       </a>
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
   ))}
 </div>
+</div>
 
 <style>
+  .shots-area { container-type: inline-size; }
   .shots {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
-    gap: var(--space-s);
+    gap: var(--space-m) var(--space-s);
   }
-  figure { margin: 0; min-width: 0; }
-  .shot {
+  @container (min-width: 26rem) {
+    .shots { grid-template-columns: var(--columns); }
+    .shot { inline-size: 100%; }
+  }
+  /* Captions share a baseline: each image is centred in the space above its caption. */
+  figure {
     display: grid;
-    place-items: center;
-    max-width: 30rem;
-    aspect-ratio: 1.55;
+    grid-template-rows: 1fr auto;
+    justify-items: center;
+    gap: var(--space-2xs);
+    margin: 0;
+    min-width: 0;
+  }
+  .shot {
+    position: relative;
+    align-self: center;
+    --max-width: 30rem;
+    inline-size: calc(var(--share) * 100%);
+    /* Portrait screenshots stop at 24rem tall instead of 30rem wide. */
+    max-inline-size: min(var(--max-width), calc(var(--aspect) * 24rem));
+    aspect-ratio: var(--aspect);
     overflow: hidden;
+    /* Matches the rounded corners of macOS dialogs and Tuna's tile panel. */
+    border-radius: 2.6% / calc(2.6% * var(--aspect));
     cursor: zoom-in;
   }
-  img { display: block; width: 100%; height: 100%; object-fit: contain; min-height: 0; }
-  .crop { position: relative; }
-  .crop img {
+  .single .shot { --max-width: 36rem; }
+  img {
     position: absolute;
-    width: 163%;
-    max-width: none;
-    height: auto;
-    top: -21%;
-    left: 50%;
-    translate: -50% 0;
+    inset-inline-start: var(--left);
+    inset-block-start: var(--top);
+    inline-size: var(--width);
+    max-inline-size: none;
+    block-size: auto;
   }
-  .tiles-only { aspect-ratio: 1.95; }
-  .tiles-only img { top: -22%; }
-  figcaption { margin-top: var(--space-2xs); font-size: var(--text-s); font-weight: var(--weight-semibold); }
+  figcaption {
+    font-size: var(--text-s);
+    font-weight: var(--weight-semibold);
+    text-align: center;
+  }
 </style>
