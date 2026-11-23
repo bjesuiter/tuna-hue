@@ -1,6 +1,7 @@
 import AppKit
 import OSLog
 import os
+import SwiftUI
 import TunaKit
 
 extension TypeID {
@@ -184,8 +185,7 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
   private let alert = NSAlert()
   private let accessory = NSView()
   private let table = NSTableView()
-  private let spinner = NSProgressIndicator()
-  private let status = NSTextField(labelWithString: "")
+  private let status = NSTextField(wrappingLabelWithString: "")
   private let message = NSTextField(wrappingLabelWithString: "Looking for Hue bridges…")
   private lazy var primary = alert.addButton(withTitle: "Continue")
   private lazy var manualButton = NSButton(
@@ -285,21 +285,27 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
   }
 
   func showPairing(for name: String) {
-    alert.messageText = "Press the button on your Hue Bridge"
-    let instruction = NSTextField(wrappingLabelWithString: "Press the physical link button on “\(name)”.")
+    alert.messageText = "Press the link button"
+    let illustration = NSHostingView(rootView: HueLinkButtonIllustration())
+    let instruction = NSTextField(
+      wrappingLabelWithString: "Press the physical link button on “\(name)”."
+    )
     instruction.alignment = .center
-    instruction.widthAnchor.constraint(equalToConstant: 420).isActive = true
-    spinner.style = .spinning
-    spinner.controlSize = .small
-    spinner.isDisplayedWhenStopped = false
-    let progress = NSStackView(views: [spinner, status])
-    progress.alignment = .centerY
-    let content = NSStackView(views: [instruction, progress])
+    status.alignment = .center
+    status.textColor = .secondaryLabelColor
+    let content = NSStackView(views: [illustration, instruction, status])
     content.orientation = .vertical
     content.alignment = .centerX
-    content.spacing = 18
-    content.edgeInsets = NSEdgeInsets(top: 4, left: 0, bottom: 16, right: 0)
+    content.spacing = 10
+    content.edgeInsets = NSEdgeInsets(top: 4, left: 0, bottom: 8, right: 0)
+    NSLayoutConstraint.activate([
+      illustration.widthAnchor.constraint(equalToConstant: 320),
+      illustration.heightAnchor.constraint(equalToConstant: 104),
+      instruction.widthAnchor.constraint(equalTo: illustration.widthAnchor),
+      status.widthAnchor.constraint(equalTo: illustration.widthAnchor),
+    ])
     showWaiting()
+    accessory.setFrameSize(content.fittingSize)
     replaceAccessoryContent(with: content)
     alert.layout()
   }
@@ -319,8 +325,6 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
     primary.isHidden = true
     primary.isEnabled = false
     status.stringValue = "Waiting for button press…"
-    spinner.isHidden = false
-    spinner.startAnimation(nil)
   }
 
   func showVerification() {
@@ -329,8 +333,6 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
 
   func waitForRetry() async -> Bool {
     guard !Task.isCancelled else { return false }
-    spinner.stopAnimation(nil)
-    spinner.isHidden = true
     status.stringValue = HueError.pairingTimedOut.localizedDescription
     primary.title = "Try Again"
     primary.action = #selector(retryPressed)
@@ -367,7 +369,6 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
   }
 
   func close() {
-    spinner.stopAnimation(nil)
     alert.window.orderOut(nil)
   }
 
@@ -400,6 +401,96 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
   @objc private func refreshPressed() {
     refreshRequested = true
     cancelPressed()
+  }
+}
+
+private struct HueLinkButtonIllustration: View {
+  @Environment(\.colorScheme) private var colorScheme
+
+  private var dark: Bool { colorScheme == .dark }
+  private let buttonOutline = Color(red: 0.25, green: 0.43, blue: 0.48)
+
+  var body: some View {
+    ZStack {
+      HueAmbientWash()
+      RoundedRectangle(cornerRadius: 19)
+        .fill(.linearGradient(colors: [.white, Color(white: 0.87)], startPoint: .top, endPoint: .bottom))
+        .strokeBorder(Color(white: 0.75))
+        .frame(width: 68, height: 66)
+        .shadow(color: .black.opacity(0.20), radius: 4, y: 3)
+        .overlay {
+          Circle()
+            .strokeBorder(buttonOutline)
+            .frame(width: 33, height: 33)
+            .background {
+              Circle()
+                .strokeBorder(buttonOutline)
+                .frame(width: 39, height: 39)
+            }
+        }
+        .overlay(alignment: .top) {
+          HStack(spacing: 5) {
+            ForEach(0..<3) { _ in
+              Circle().fill(buttonOutline).frame(width: 3, height: 3)
+            }
+          }
+          .padding(.top, 8)
+        }
+        .overlay(alignment: .leading) {
+          HStack(spacing: 0) {
+            Rectangle().frame(width: 25, height: 1)
+            Text("Link button")
+              .font(.caption.bold())
+              .padding(.horizontal, 5)
+              .padding(.vertical, 3)
+              .background(dark ? Color(white: 0.15) : .white, in: .rect(cornerRadius: 4))
+          }
+          .foregroundStyle(
+            dark ? Color(red: 0.70, green: 0.96, blue: 0.92) : Color(red: 0.10, green: 0.34, blue: 0.39)
+          )
+          .fixedSize()
+          .offset(x: 50)
+        }
+    }
+    .clipShape(.rect(cornerRadius: 12))
+    .overlay {
+      RoundedRectangle(cornerRadius: 12).strokeBorder(.primary.opacity(0.15))
+    }
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+}
+
+private struct HueAmbientWash: View {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.colorScheme) private var colorScheme
+  @State private var settled = false
+
+  var body: some View {
+    let dark = colorScheme == .dark
+    let drift: CGFloat = settled || reduceMotion ? 1 : 0
+
+    Color(white: dark ? 0.16 : 0.94)
+      .overlay {
+        ZStack {
+          glow(.orange, opacity: dark ? 0.32 : 0.40)
+            .offset(x: -105 + 16 * drift, y: -30 + 6 * drift)
+          glow(.mint, opacity: dark ? 0.30 : 0.42)
+            .offset(x: 113 - 14 * drift, y: -22 + 4 * drift)
+          glow(.blue, opacity: dark ? 0.33 : 0.31)
+            .offset(x: 4 + 13 * drift, y: 64 - 7 * drift)
+        }
+      }
+    .animation(reduceMotion ? nil : .easeInOut(duration: 5), value: drift)
+    .id(reduceMotion)
+    .onAppear { settled = true }
+  }
+
+  private func glow(_ tint: Color, opacity: Double) -> some View {
+    Ellipse()
+      .fill(.radialGradient(colors: [tint.opacity(opacity), tint.opacity(0)], center: .center,
+                            startRadius: 12, endRadius: 111))
+      .frame(width: 222, height: 160)
   }
 }
 
@@ -521,7 +612,7 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
         return .failure(error.localizedDescription)
       }
     }
-    return manage || first ? command : AddHueBridgeItem(command: command)
+    return manage ? command : ConnectHueBridgeItem(command: command, first: first)
   }
 
   private static func manageBridges() throws -> Bool {
@@ -566,29 +657,42 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
   }
 }
 
-private final class AddHueBridgeItem: CatalogEntity, Runnable, @unchecked Sendable {
+private final class ConnectHueBridgeItem: CatalogEntity, Runnable, CommandResultHistoryProviding, @unchecked Sendable {
   private let command: CommandItem
+  private let first: Bool
+  private let hueIcon: NSImage?
 
-  init(command: CommandItem) {
+  init(command: CommandItem, first: Bool) {
     self.command = command
+    self.first = first
+    hueIcon = first ? Bundle(for: HueExtension.self).image(forResource: "HueAlertIcon") : nil
     super.init(id: command.id, title: command.title, path: nil)
     type = command.type
     typeID = command.typeID
   }
 
   override var detail: String? { command.detail }
-  override var searchKeys: [String] { super.searchKeys + ["Connect Hue Bridge"] }
+  override var searchKeys: [String] {
+    first ? command.searchKeys : super.searchKeys + ["Connect Hue Bridge"]
+  }
   var headlessEligibility: CommandHeadlessEligibility { command.headlessEligibility }
   var executionPolicy: CommandExecutionPolicy { command.executionPolicy }
+  var resultHistoryIdentifier: String? { command.resultHistoryIdentifier }
 
   func run() async -> ActionResult { await command.run() }
 
+  override func image(size: Int) -> NSImage? {
+    hueIcon ?? super.image(size: size)
+  }
+
   override func preview(maxDimension: CGFloat) -> CatalogItemPreview {
-    command.preview(maxDimension: maxDimension)
+    if let hueIcon { return CatalogItemPreview(image: hueIcon) }
+    return command.preview(maxDimension: maxDimension)
   }
 
   override func placeholderPreview(maxDimension: CGFloat) -> CatalogItemPreview {
-    command.placeholderPreview(maxDimension: maxDimension)
+    if let hueIcon { return CatalogItemPreview(image: hueIcon) }
+    return command.placeholderPreview(maxDimension: maxDimension)
   }
 }
 
