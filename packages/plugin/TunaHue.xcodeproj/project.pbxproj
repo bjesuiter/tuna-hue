@@ -10,6 +10,7 @@
 		AAAAAAAAAAAAAAAAAAAAAAAB /* HueBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA9; };
 		AAAAAAAAAAAAAAAAAAAAAAAE /* TunaKit in Frameworks */ = {isa = PBXBuildFile; productRef = AAAAAAAAAAAAAAAAAAAAAA10; };
 		AAAAAAAAAAAAAAAAAAAAAAB1 /* HueConnections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB0; };
+		AAAAAAAAAAAAAAAAAAAAAAB3 /* HueAlertIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAB2; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,12 +19,13 @@
 		AAAAAAAAAAAAAAAAAAAAAAA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAAA6 /* TunaHue.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TunaHue.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAAAAAAAAAAAAAAAAAAAAAB0 /* HueConnections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueConnections.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAB2 /* HueAlertIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "HueAlertIcon.png"; path = "Resources/HueAlertIcon.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		AAAAAAAAAAAAAAAAAAAAAAA2 = {
 			isa = PBXGroup;
-			children = (AAAAAAAAAAAAAAAAAAAAAAA3, AAAAAAAAAAAAAAAAAAAAAAA7, AAAAAAAAAAAAAAAAAAAAAAA4);
+			children = (AAAAAAAAAAAAAAAAAAAAAAA3, AAAAAAAAAAAAAAAAAAAAAAA7, AAAAAAAAAAAAAAAAAAAAAAB2, AAAAAAAAAAAAAAAAAAAAAAA4);
 			sourceTree = "<group>";
 		};
 		AAAAAAAAAAAAAAAAAAAAAAA3 /* Sources */ = {
@@ -58,11 +60,20 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXResourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAAB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (AAAAAAAAAAAAAAAAAAAAAAB3);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		AAAAAAAAAAAAAAAAAAAAAAA5 /* TunaHue */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAAA12;
-			buildPhases = (AAAAAAAAAAAAAAAAAAAAAAAC, AAAAAAAAAAAAAAAAAAAAAAAD);
+			buildPhases = (AAAAAAAAAAAAAAAAAAAAAAAC, AAAAAAAAAAAAAAAAAAAAAAAD, AAAAAAAAAAAAAAAAAAAAAAB4);
 			buildRules = ();
 			dependencies = ();
 			name = TunaHue;
