@@ -48,19 +48,21 @@ void main() {
 
   float daylight = intensity * alpha * 0.26;
   float moonlight = (1.0 - intensity) * shimmer;
-  vec3 color = (daylight * rainbow + moonlight * silver) / max(daylight + moonlight, 0.001);
+  float opacity = daylight + moonlight;
+  vec3 color = (daylight * rainbow + moonlight * silver) / max(opacity, 0.001);
   vec3 linearColor = clamp(color, 0.0, 1.0);
   vec3 encodedColor = mix(
     linearColor * 12.92,
     1.055 * pow(linearColor, vec3(1.0 / 2.4)) - 0.055,
     step(vec3(0.0031308), linearColor)
   );
-  gl_FragColor = vec4(encodedColor, daylight + moonlight);
+  // Premultiply after encoding so the canvas compositor receives premultiplied Display P3.
+  gl_FragColor = vec4(encodedColor * opacity, opacity);
 }
 `;
 
 export function createAmbientLight(canvas: HTMLCanvasElement) {
-  const gl = canvas.getContext('webgl', { premultipliedAlpha: false, antialias: false });
+  const gl = canvas.getContext('webgl', { premultipliedAlpha: true, antialias: false });
   if (!gl || !('drawingBufferColorSpace' in gl)) return;
   gl.drawingBufferColorSpace = 'display-p3';
   if (gl.drawingBufferColorSpace !== 'display-p3') return;
