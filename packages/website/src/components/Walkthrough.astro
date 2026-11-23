@@ -1,4 +1,5 @@
 ---
+import JourneyImagePreview from './JourneyImagePreview.astro';
 import JourneyShots from './JourneyShots.astro';
 import findCommand from '../assets/screenshots/find-hue-command.png';
 import chooseBridge from '../assets/screenshots/choose-bridge.png';
@@ -27,7 +28,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
         <p>If the command is missing, set <strong>Sources → Hue Groups → In global search</strong> to <strong>All</strong>.</p>
       </div>
       <JourneyShots shots={[
-        { image: findCommand, crop: 'tiles', alt: 'Connect First Hue Bridge selected in Tuna search.', caption: 'Run the connection command' },
+        { image: findCommand, crop: 'tiles', alt: 'Connect First Hue Bridge selected in Tuna search.' },
       ]} />
     </li>
 
@@ -85,6 +86,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
     </details>
   </section>
 </section>
+<JourneyImagePreview />
 
 <style>
   .journey { padding-block: clamp(2rem, 6vw, 5rem) 5rem; }

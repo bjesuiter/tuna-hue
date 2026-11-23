@@ -6,7 +6,7 @@ interface Props {
   shots: {
     image: ImageMetadata;
     alt: string;
-    caption: string;
+    caption?: string;
     crop?: boolean | 'tiles';
   }[];
 }
@@ -16,10 +16,10 @@ const { shots } = Astro.props;
 <div class="shots">
   {shots.map(({ image, alt, caption, crop }) => (
     <figure>
-      <a class:list={['shot', { crop, 'tiles-only': crop === 'tiles' }]} href={image.src} aria-label={`Open full screenshot. ${alt}`}>
+      <a class:list={['shot', { crop, 'tiles-only': crop === 'tiles' }]} href={image.src} data-image-preview aria-label={`Open full screenshot. ${alt}`}>
         <Image src={image} alt={alt} width={Math.min(960, image.width)} loading="lazy" />
       </a>
-      <figcaption>{caption}</figcaption>
+      {caption && <figcaption>{caption}</figcaption>}
     </figure>
   ))}
 </div>
@@ -37,6 +37,7 @@ const { shots } = Astro.props;
     max-width: 30rem;
     aspect-ratio: 1.55;
     overflow: hidden;
+    cursor: zoom-in;
   }
   img { display: block; width: 100%; height: 100%; object-fit: contain; min-height: 0; }
   .crop { position: relative; }
