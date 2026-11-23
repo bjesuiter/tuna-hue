@@ -1,14 +1,15 @@
 <div class="demo" data-light-demo data-lit="true">
   <div class="stage" aria-hidden="true">
     <div class="wash"></div>
+    <div class="water"></div>
     <canvas></canvas>
     <div class="fixture">
       <span class="shade"></span>
     </div>
   </div>
-  <div class="console">
+  <div class="console glass-panel">
     <p class="caption">Interactive demo</p>
-    <button type="button" disabled>
+    <button class="glass-control" type="button" disabled>
       <span class="room"><strong>Living Room</strong><small>Hue Room</small></span>
       <span class="action"><span data-action>Turn Off</span> <span aria-hidden="true">↵</span></span>
     </button>
@@ -38,9 +39,21 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    mask-image: radial-gradient(ellipse closest-side, black 30%, transparent 100%);
   }
-  [data-lit="false"] .wash { opacity: .22; }
+  .wash { mask-image: radial-gradient(ellipse closest-side, black 30%, transparent 100%); }
+  [data-lit="false"] .wash { opacity: 0; }
+
+  .water {
+    position: absolute;
+    inset: 57% 4% 3%;
+    opacity: 0;
+    background:
+      radial-gradient(ellipse 11% 4% at 51% 48%, #e1f1ff5e, transparent),
+      radial-gradient(ellipse 18% 5% at 49% 63%, #b0d6ff63, transparent),
+      radial-gradient(ellipse 25% 4% at 51% 78%, #a4c9f254, transparent),
+      radial-gradient(ellipse 47% 36% at 50% 70%, #608abd38, transparent 100%);
+  }
+  [data-lit="false"] .water { opacity: 1; }
 
   .fixture {
     position: relative;
@@ -57,6 +70,7 @@
       radial-gradient(ellipse at 79% 72%, #c3e8df70, transparent 45%);
   }
   .shade {
+    position: relative;
     width: 100%;
     border: 1px solid #fff9;
     aspect-ratio: 1.06;
@@ -64,15 +78,23 @@
     background: radial-gradient(circle at 37% 32%, white 16%, #fcf4ed 48%, #e4cbc5 76%, #c8a9b5 100%);
     box-shadow: 0 8px 34px #f2ccd078, inset -10px -12px 22px #c2a4b230;
   }
-  [data-lit="false"] .shade { filter: brightness(.9); box-shadow: none; }
+  .shade::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 1px solid #7e9abe88;
+    background: radial-gradient(circle at 33% 25%, #556d87 0%, #253b55 48%, #101b2e 78%);
+    box-shadow: inset 2px 2px 6px #d8ebff99, 0 8px 40px #94bffa35;
+    opacity: 0;
+  }
+  [data-lit="false"] .shade { box-shadow: none; }
+  [data-lit="false"] .shade::after { opacity: 1; }
 
   .console {
     width: min(100%, 23rem);
     padding: .72rem;
-    border: 1px solid var(--line);
     border-radius: .9rem;
-    background: #fffe;
-    box-shadow: var(--soft-shadow);
   }
   .caption {
     padding: .1rem .3rem .5rem;
@@ -91,12 +113,9 @@
     gap: .5rem;
     border-radius: .5rem;
     padding: .65rem .75rem;
-    border: 1px solid var(--line);
-    background: var(--accent);
     color: var(--ink);
     cursor: pointer;
   }
-  button:hover:not(:disabled) { background: white; }
   button:disabled { cursor: default; }
   .room { display: grid; line-height: 1.25; }
   .room small { color: var(--muted-ink); }
@@ -105,8 +124,8 @@
   .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .wash { transition: opacity 450ms ease; }
-    .shade { transition: filter 450ms ease, box-shadow 450ms ease; }
+    .wash, .water, .shade::after { transition: opacity 500ms ease; }
+    .shade { transition: box-shadow 500ms ease; }
   }
 </style>
 
@@ -121,14 +140,54 @@
     const motion = matchMedia('(prefers-reduced-motion: no-preference)');
     const ambient = createAmbientLight(canvas);
     let lit = true;
+    let visible = true;
+    let paused = false;
     let frame = 0;
+    let lastFrame = 0;
     let lightLevel = 1;
+    let waterTime = 0;
 
     function paint() {
-      ambient?.draw(lightLevel);
+      ambient?.draw(lightLevel, waterTime);
     }
 
-    if (ambient) new ResizeObserver(paint).observe(canvas);
+    function render(now: number) {
+      frame = 0;
+      const target = Number(lit);
+      const elapsed = Math.min(now - lastFrame, 50);
+      lastFrame = now;
+      const moving = Boolean(ambient) && motion.matches && !paused && visible;
+
+      if (moving) {
+        const step = elapsed / 500;
+        lightLevel += Math.max(-step, Math.min(step, target - lightLevel));
+        if (!lit) waterTime = (waterTime + elapsed / 1000) % (40 * Math.PI);
+      } else {
+        lightLevel = target;
+      }
+      paint();
+      if (moving && (!lit || lightLevel !== target)) frame = requestAnimationFrame(render);
+    }
+
+    function updateScene() {
+      cancelAnimationFrame(frame);
+      lastFrame = performance.now();
+      render(lastFrame);
+    }
+
+    if (ambient) {
+      new ResizeObserver(paint).observe(canvas);
+      new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        updateScene();
+      }).observe(canvas);
+      motion.addEventListener('change', updateScene);
+      document.addEventListener('ambient-motion-change', event => {
+        paused = (event as CustomEvent<boolean>).detail;
+        updateScene();
+      });
+    }
+
     button.disabled = false;
     button.addEventListener('click', () => {
       lit = !lit;
@@ -136,23 +195,7 @@
       action.textContent = lit ? 'Turn Off' : 'Turn On';
       status.textContent = lit ? 'Living Room lights are on.' : 'Living Room lights are off.';
 
-      cancelAnimationFrame(frame);
-      const target = Number(lit);
-      if (!ambient || !motion.matches) {
-        lightLevel = target;
-        paint();
-        return;
-      }
-
-      const start = performance.now();
-      const from = lightLevel;
-      function animate(now: number) {
-        const progress = motion.matches ? Math.min((now - start) / 500, 1) : 1;
-        lightLevel = from + (target - from) * progress;
-        paint();
-        if (progress < 1) frame = requestAnimationFrame(animate);
-      }
-      frame = requestAnimationFrame(animate);
+      updateScene();
     });
   }
 </script>

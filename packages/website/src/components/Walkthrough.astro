@@ -13,13 +13,13 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
 ---
 
 <section class="journey" aria-labelledby="walkthrough">
-  <h2 id="walkthrough">From bridge to light switch.</h2>
+  <h1 id="walkthrough">From bridge to light switch.</h1>
 
   <ol class="steps" role="list">
-    <li>
+    <li class="glass-panel glass-rainbow">
       <div class="step-copy">
         <span class="number" aria-hidden="true">01</span>
-        <h3>Find Hue in Tuna</h3>
+        <h2>Find Hue in Tuna</h2>
         <p>Once the extension is installed, open Tuna, search for <strong>Hue</strong>, and run <strong>Connect First Hue Bridge</strong>.</p>
         <p>If the command is missing, set <strong>Sources → Hue Groups → In global search</strong> to <strong>All</strong>.</p>
       </div>
@@ -28,10 +28,10 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
       ]} />
     </li>
 
-    <li>
+    <li class="glass-panel glass-rainbow">
       <div class="step-copy">
         <span class="number" aria-hidden="true">02</span>
-        <h3>Pair your bridge</h3>
+        <h2>Pair your bridge</h2>
         <p>Keep your Mac and bridge on the same network. Allow local network access if macOS asks. Select your bridge, choose <strong>Continue</strong>, then press the physical link button when prompted.</p>
       </div>
       <JourneyShots shots={[
@@ -41,10 +41,10 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
       ]} />
     </li>
 
-    <li>
+    <li class="glass-panel glass-rainbow">
       <div class="step-copy">
         <span class="number" aria-hidden="true">03</span>
-        <h3>Control a room or zone</h3>
+        <h2>Control a room or zone</h2>
         <p>Search by name and look for <strong>Hue Room</strong> or <strong>Hue Zone</strong> in the result details. Press <kbd>Tab</kbd> to choose an available action and <kbd>Return</kbd> to run it.</p>
       </div>
       <JourneyShots shots={[
@@ -55,7 +55,7 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
   </ol>
 
   <section class="help" aria-labelledby="help-title">
-    <h3 id="help-title">Bridge setup and troubleshooting</h3>
+    <h2 id="help-title">Bridge setup and troubleshooting</h2>
     <details>
       <summary>My bridge doesn’t appear</summary>
       <p>Choose <strong>Refresh</strong> in the bridge picker. You can also select <strong>Enter IP Address…</strong> and supply the local address, bridge ID, and Hue application key.</p>
@@ -83,19 +83,17 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
 
 <style>
   .journey { padding-block: clamp(2rem, 6vw, 5rem) 5rem; }
-  h2, h3 { margin: 0; line-height: 1.05; letter-spacing: -.045em; }
-  h2 { font-family: var(--heading-font); max-width: 14ch; font-size: clamp(2.75rem, 7vw, 6rem); scroll-margin-block-start: 1.5rem; }
-  h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+  h1, h2 { margin: 0; line-height: 1.05; letter-spacing: -.045em; }
+  h1 { font-family: var(--heading-font); max-width: 15ch; font-size: clamp(2.75rem, 7vw, 6rem); }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
   .steps { list-style: none; margin: 2.5rem 0; padding: 0; display: grid; gap: 1.25rem; }
   li {
     display: grid;
-    grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.4fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     gap: clamp(1rem, 3vw, 2.5rem);
     padding: clamp(1.1rem, 3vw, 2.3rem);
-    border: 1px solid var(--line);
     border-radius: 1rem;
-    box-shadow: var(--soft-shadow);
   }
   .number {
     display: inline-grid;
@@ -109,15 +107,15 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
     font: 700 .75rem ui-monospace, monospace;
   }
   p { margin-top: .75rem; color: var(--muted-ink); max-width: 65ch; }
-  kbd { border: 1px solid var(--line); border-radius: .25rem; padding: .05em .3em; background: #f7f6fb; }
+  kbd { border: 1px solid var(--line); border-radius: .25rem; padding: .05em .3em; background: var(--shot-surface, #f7f6fb); }
   .help { margin-top: 3.5rem; }
-  .help h3 { margin-bottom: 1rem; }
+  .help h2 { margin-bottom: 1rem; }
   details { border-top: 1px solid var(--line); }
   details:last-child { border-bottom: 1px solid var(--line); }
   summary { padding-block: .9rem; font-weight: 750; cursor: pointer; }
   details p { margin: 0 0 1rem; }
   details :global(.shots) { margin-bottom: 1.5rem; }
-  @media (max-width: 52rem) {
-    li { grid-template-columns: 1fr; }
+  @media (min-width: 52rem) {
+    li { grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.4fr); }
   }
 </style>

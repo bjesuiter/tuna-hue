@@ -1,5 +1,5 @@
 ---
-const walkthroughHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/#walkthrough';
+const walkthroughHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/how-it-works/';
 
 const fetchSource = `git clone https://github.com/bjesuiter/tuna-hue.git
 cd tuna-hue`;
@@ -25,7 +25,7 @@ ditto \\
     <p>Build the extension from source, then load it in Tuna on your Mac.</p>
   </div>
 
-  <section class="requirements" aria-labelledby="requirements-title">
+  <section class="requirements glass-panel glass-rainbow" aria-labelledby="requirements-title">
     <h2 id="requirements-title">Before you start</h2>
     <ul>
       <li>macOS 15 or later</li>
@@ -59,7 +59,7 @@ ditto \\
     </li>
   </ol>
 
-  <a class="next" href={walkthroughHref}>Continue to the bridge walkthrough <span aria-hidden="true">→</span></a>
+  <a class="next glass-control" href={walkthroughHref}>Continue to the bridge walkthrough <span aria-hidden="true">→</span></a>
 </article>
 
 <style>
@@ -85,10 +85,7 @@ ditto \\
   .intro p { font-size: 1.125rem; }
   .requirements {
     padding: clamp(1.15rem, 3vw, 1.75rem);
-    border: 1px solid var(--line);
     border-radius: 1rem;
-    background: var(--accent);
-    box-shadow: var(--soft-shadow);
   }
   .requirements ul { margin-block: .6rem 0; padding-inline-start: 1.2rem; }
   .steps {
@@ -117,12 +114,8 @@ ditto \\
     gap: .7rem;
     align-items: center;
     padding: .65rem 1rem;
-    border: 1px solid var(--line);
     border-radius: 2rem;
-    background: var(--accent);
-    box-shadow: var(--soft-shadow);
     text-decoration: none;
     font-weight: 650;
   }
-  .next:hover { background: var(--paper); }
 </style>

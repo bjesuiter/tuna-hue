@@ -39,7 +39,7 @@ const { shots } = Astro.props;
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: .75rem;
-    background: radial-gradient(ellipse at 80% 95%, #f2e5ff, transparent 70%), #f7f6fb;
+    background: radial-gradient(ellipse at 80% 95%, var(--shot-wash, #f2e5ff), transparent 70%), var(--shot-surface, #f7f6fb);
   }
   img { display: block; width: 100%; height: 100%; object-fit: contain; min-height: 0; }
   .crop { position: relative; }

@@ -10,8 +10,11 @@ interface Props {
 const { ambientLighting, title, description } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-const installPath = base + '/install/';
-const onInstallPage = Astro.url.pathname.replace(/\/$/, '') === base + '/install';
+const currentPath = Astro.url.pathname.replace(/\/$/, '');
+const mainLinks = [
+  { path: base + '/install', label: 'Get started' },
+  { path: base + '/how-it-works', label: 'See how it works' },
+];
 const repository = 'https://github.com/bjesuiter/tuna-hue';
 ---
 <!doctype html>
@@ -27,7 +30,9 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
       <header>
         <a class="wordmark" href={base + '/'}><span class="mark" aria-hidden="true"></span>Tuna Hue Control</a>
         <nav aria-label="Main">
-          <a href={installPath} aria-current={onInstallPage ? 'page' : undefined}>Get started</a>
+          {mainLinks.map(({ path, label }) => (
+            <a href={path + '/'} aria-current={currentPath === path ? 'page' : undefined}>{label}</a>
+          ))}
           <a class="github" href={repository}>
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656" />
@@ -44,6 +49,7 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
       <main>
         <slot />
       </main>
+      <slot name="footer" />
     </div>
   </body>
 </html>
@@ -59,8 +65,14 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     --ink: #16151a;
     --muted-ink: #595665;
     --line: #dedce4;
-    --accent: #faf0eb;
-    --soft-shadow: 0 16px 40px -24px #a76f8370, 0 12px 32px -24px #edb19a80;
+    --accent: #eff5ff;
+    --focus: #6646d3;
+    --glass-panel: #fbfdffdf;
+    --glass-control: #eef5ff94;
+    --glass-control-hover: #e2edffdc;
+    --glass-edge: #7287a654;
+    --glass-glint: #ffffffbb;
+    --glass-shadow: 0 16px 38px -26px #465d8c73, 0 3px 12px #6d83ae24;
     --heading-font: 'Avenir Next', system-ui, sans-serif;
     background: var(--paper);
     color: var(--ink);
@@ -72,7 +84,7 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
   body { isolation: isolate; }
   button { font: inherit; }
   a { color: inherit; }
-  :focus-visible { outline: 3px solid #6646d3; outline-offset: 5px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 5px; }
 
   .page { max-width: 90rem; margin-inline: auto; padding-inline: clamp(1.25rem, 5vw, 5rem); }
   header {
@@ -87,7 +99,7 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
   }
   header a { text-decoration: none; font-weight: 650; font-size: .875rem; }
   header a:hover { text-decoration: underline; }
-  header nav { display: flex; align-items: center; justify-content: flex-end; flex: 1 0 auto; gap: clamp(.75rem, 3vw, 1.75rem); }
+  header nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; flex: 1 1 auto; gap: .35rem clamp(.75rem, 3vw, 1.75rem); }
   header [aria-current="page"] { text-decoration: underline; text-underline-offset: .3em; }
   .github { display: inline-flex; gap: .45rem; align-items: center; }
   .wordmark { display: inline-flex; gap: .65rem; align-items: center; }
@@ -97,18 +109,56 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     border-radius: 50%;
     border: 1px solid #c2b7d0;
     box-shadow: 0 4px 12px #aca1d85c;
-    background: conic-gradient(#f4c6e3, #cec9f7, #c7ebec, #f9eccb, #f4c6e3);
+    background: var(--mark-light, conic-gradient(#f4c6e3, #cec9f7, #c7ebec, #f9eccb, #f4c6e3));
   }
 
-  .page:has([data-light-demo][data-lit="false"]) {
-    --page-saturation: 0;
-    --ambient-opacity: .24;
+  .glass-panel, .glass-control {
+    border: 1px solid var(--glass-edge);
+    background-image: var(--glass-tint, none), linear-gradient(155deg, var(--glass-glint), transparent 58%);
+    box-shadow: inset 0 1px 0 var(--glass-glint), var(--glass-shadow);
   }
 
-  header, main { filter: saturate(var(--page-saturation, 1)); }
+  .glass-panel {
+    background-color: var(--glass-panel);
+    backdrop-filter: blur(18px) saturate(1.15);
+  }
 
-  @media (prefers-reduced-motion: no-preference) {
-    header, main { transition: filter 450ms ease; }
+  .glass-rainbow {
+    --glass-tint: var(--instruction-glow,
+      radial-gradient(ellipse 15rem 6rem at left top, #ffdcaa, #f7afd389 44%, transparent 100%),
+      radial-gradient(ellipse 24rem 8rem at 10% top, #bda9ffb3, #b3d8fd82 48%, transparent 100%),
+      radial-gradient(ellipse 26rem 7rem at 15% top, #ace8ceba, transparent 100%)
+    );
+  }
+
+  .glass-control {
+    background-color: var(--glass-control);
+    backdrop-filter: blur(12px) saturate(1.25);
+  }
+
+  .glass-control:hover:not(:disabled) { background-color: var(--glass-control-hover); }
+
+  :root:has([data-light-demo][data-lit="false"]) {
+    color-scheme: dark;
+    background-color: var(--sky);
+    --moonlight: 1;
+    --sky: #091221;
+    --paper: #132238;
+    --ink: #edf4ff;
+    --muted-ink: #b9cbe2;
+    --line: #637c9e;
+    --accent: #233952;
+    --focus: #b4d7ff;
+    --mark-light: radial-gradient(circle at 32% 30%, #e5f0ff, #7796bb 72%);
+    --glass-panel: #15263ae8;
+    --glass-control: #35597f8c;
+    --glass-control-hover: #476b96c9;
+    --glass-edge: #9bc3f077;
+    --glass-glint: #b9ddff29;
+    --instruction-glow: none;
+    --glass-shadow: 0 14px 38px -20px #000c, 0 3px 12px #050a1457;
+    --shot-surface: #1a2c44;
+    --shot-wash: #426082ad;
   }
 
   @media (max-width: 48rem) {

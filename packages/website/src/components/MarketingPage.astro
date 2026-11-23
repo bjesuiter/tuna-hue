@@ -1,7 +1,6 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import LightDemo from './LightDemo.astro';
-import Walkthrough from './Walkthrough.astro';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -15,33 +14,36 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <p class="eyebrow">A Tuna extension for Philips Hue</p>
       <h1 id="headline">Lights at your fingertips.</h1>
       <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
-      <a class="install" href={base + '/install/'}>Get started <span aria-hidden="true">→</span></a>
-      <a class="walkthrough-link" href="#walkthrough">See how it works <span aria-hidden="true">↓</span></a>
+      <a class="install glass-control" href={base + '/install/'}>Get started <span aria-hidden="true">→</span></a>
+      <a class="walkthrough-link" href={base + '/how-it-works/'}>See how it works <span aria-hidden="true">→</span></a>
     </div>
     <LightDemo />
   </section>
-  <section class="compatibility" aria-label="Requirements">
-    <p>macOS 15+</p>
-    <p>Tuna 0.113+</p>
-    <p>Philips Hue Bridge</p>
-  </section>
-  <Walkthrough />
+  <footer slot="footer" class="requirements" aria-label="Requirements">
+    <div class="requirements-bar glass-panel">
+      <div class="requirements-links">
+        <a href="https://support.apple.com/en-us/120282" target="_blank" rel="noopener">macOS 15+</a>
+        <a href="https://tunaformac.com/" target="_blank" rel="noopener">Tuna 0.113+</a>
+        <a href="https://www.philips-hue.com/en-us/p/hue-bridge/046677458478/specifications" target="_blank" rel="noopener">Philips Hue Bridge</a>
+      </div>
+    </div>
+  </footer>
 </SiteLayout>
 
 <style>
   .hero {
     display: grid;
-    grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    gap: clamp(1.5rem, 4vw, 4.5rem);
+    gap: 1.8rem;
     padding-block: clamp(3rem, 7vw, 7rem);
   }
-  .eyebrow, .compatibility { font: 600 .72rem/1.5 ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; }
+  .eyebrow, .requirements-links { font: 600 .72rem/1.5 ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; }
   .intro { container-type: inline-size; }
   .hero h1 {
     max-width: 12ch;
     margin-block: .9rem 1.2rem;
-    font: 650 clamp(2.6rem, 17cqi, 7rem)/.98 var(--heading-font);
+    font: 650 clamp(2.8rem, 10vw, 5.5rem)/.98 var(--heading-font);
     letter-spacing: -.06em;
     text-wrap: balance;
   }
@@ -50,19 +52,48 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     display: inline-flex;
     gap: 1.1rem;
     margin-top: 1.65rem;
-    background: var(--accent);
-    border: 1px solid var(--line);
-    box-shadow: var(--soft-shadow);
     padding: .7rem .95rem;
     border-radius: 2rem;
     text-decoration: none;
     font-weight: 750;
   }
-  .install:hover { background: white; }
   .walkthrough-link { display: inline-block; margin: 1rem 0 0 .95rem; font-size: .9rem; font-weight: 650; text-underline-offset: .2em; }
-  .compatibility { display: flex; align-items: center; border-block: 1px solid var(--line); gap: .7rem 2rem; flex-wrap: wrap; padding-block: 1rem; margin-bottom: 2rem; }
-  @media (max-width: 48rem) {
-    .hero { grid-template-columns: 1fr; gap: 1.8rem; }
-    .hero h1 { font-size: clamp(2.8rem, 10vw, 5.5rem); }
+  .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+  .requirements-bar {
+    border-radius: 1rem;
+    background-color: color-mix(in oklab, var(--paper) 52%, transparent);
+    background-image: none;
+  }
+  .requirements-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .7rem 2rem;
+    padding-block: 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    padding-inline: 1rem;
+  }
+  .requirements-links a { text-underline-offset: .25em; }
+
+  @media (min-width: 48rem) {
+    .hero { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(1.5rem, 4vw, 4.5rem); }
+    .hero h1 { font-size: clamp(2.6rem, 17cqi, 7rem); }
+  }
+
+  @media (min-width: 48rem) and (min-height: 30rem) {
+    .requirements { min-block-size: var(--requirements-height); }
+    .requirements-bar {
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 2;
+      border-inline: 0;
+      border-block-end: 0;
+      border-radius: 0;
+    }
+    .requirements-links {
+      max-inline-size: 90rem;
+      min-block-size: var(--requirements-height);
+      margin-inline: auto;
+      padding-inline: clamp(1.25rem, 5vw, 5rem);
+    }
   }
 </style>

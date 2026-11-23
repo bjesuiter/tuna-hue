@@ -16,10 +16,23 @@
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
-    background: radial-gradient(ellipse at 82% 22%, #fdf1e9, transparent 70%);
-    filter: saturate(var(--page-saturation, 1));
-    opacity: var(--ambient-opacity, 1);
+    background-color: var(--sky, white);
   }
+  .field::before, .field::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .field::before {
+    background: radial-gradient(ellipse at 82% 22%, #fdf1e9, transparent 70%);
+  }
+  .field::after {
+    background:
+      radial-gradient(ellipse at 76% 46%, #344f70, transparent 56%),
+      radial-gradient(ellipse at 26% 91%, #152840, transparent 65%);
+    opacity: var(--moonlight, 0);
+  }
+  .field::before, .glow { opacity: calc(1 - var(--moonlight, 0)); }
   .glow {
     position: absolute;
     inline-size: max(86vw, 29rem);
@@ -52,7 +65,7 @@
   button:hover { text-decoration: underline; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .field { transition: filter 450ms ease, opacity 450ms ease; }
+    .field::before, .field::after, .glow { transition: opacity 550ms ease; }
   }
 </style>
 
@@ -142,6 +155,7 @@
         else animation.play();
       }
       button.textContent = paused ? 'Resume ambient motion' : 'Pause ambient motion';
+      document.dispatchEvent(new CustomEvent('ambient-motion-change', { detail: paused }));
     });
 
     motion.addEventListener('change', updateMotion);
