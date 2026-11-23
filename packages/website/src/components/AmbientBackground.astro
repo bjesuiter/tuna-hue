@@ -6,11 +6,9 @@
     <span class="glow blue"></span>
     <span class="glow gold"></span>
   </div>
-  <button type="button" hidden>Pause ambient motion</button>
 </div>
 
 <style>
-  [data-ambient-background] { position: relative; }
   .field {
     position: fixed;
     inset: 0;
@@ -53,20 +51,6 @@
   .blue { --light: oklch(80.1% 0.111 254 / 0.769); inset: 42% auto auto 5%; }
   .gold { --light: oklch(89% 0.116 92 / 0.6); inset: 37% auto auto -29%; }
 
-  button {
-    position: absolute;
-    inset: .55rem 0 auto auto;
-    z-index: 1;
-    border: 0;
-    border-radius: .35rem;
-    padding: .25rem .4rem;
-    color: var(--muted-ink);
-    background: oklch(none none none / 0);
-    font-size: .75rem;
-    cursor: pointer;
-  }
-  button:hover { text-decoration: underline; }
-
   @media (prefers-reduced-motion: no-preference) {
     .field::before, .field::after, .glow { transition: opacity 550ms ease; }
   }
@@ -94,8 +78,9 @@
   }
 
   const background = document.querySelector('[data-ambient-background]');
-  if (background) {
-    const button = background.querySelector('button')!;
+  const button = document.querySelector<HTMLButtonElement>('[data-ambient-motion-toggle]');
+  const label = button?.querySelector('span');
+  if (background && button && label) {
     const glows = background.querySelectorAll('.glow');
     const motion = matchMedia('(prefers-reduced-motion: no-preference)');
     let animations: Animation[] = [];
@@ -187,7 +172,8 @@
         if (paused) animation.pause();
         else animation.play();
       }
-      button.textContent = paused ? 'Resume ambient motion' : 'Pause ambient motion';
+      button.dataset.paused = String(paused);
+      label.textContent = paused ? 'Resume motion' : 'Pause motion';
     });
 
     motion.addEventListener('change', updateMotion);
