@@ -2,6 +2,10 @@
 import { Code } from 'astro:components';
 import type { ShikiTransformer, ThemeRegistration } from 'shiki';
 
+// HAST node types, taken from Shiki so the page needs no direct `hast` dependency.
+type HastRoot = Parameters<NonNullable<ShikiTransformer['root']>>[0];
+type ElementContent = Extract<HastRoot['children'][number], { type: 'element' }>['children'][number];
+
 // Token colours come from the --code-* custom properties below, so the lamp switch recolours them.
 const codeTheme: ThemeRegistration = {
   name: 'tuna-hue',
@@ -14,6 +18,16 @@ const codeTheme: ThemeRegistration = {
   ],
 };
 
+// Break opportunities after each "/", so long paths wrap there in the wrapping agent prompt.
+const breakAfterSlashes = (nodes: ElementContent[]): ElementContent[] => nodes.flatMap((node): ElementContent[] => {
+  if (node.type === 'element') return [{ ...node, children: breakAfterSlashes(node.children) }];
+  if (node.type !== 'text' || !node.value.includes('/')) return [node];
+  return node.value.split(/(?<=\/)/).flatMap((part, index): ElementContent[] => [
+    ...(index > 0 ? [{ type: 'element' as const, tagName: 'wbr', properties: {}, children: [] }] : []),
+    { type: 'text', value: part },
+  ]);
+});
+
 // Emit only <code class="language-bash"> with token spans, so each snippet sits in the page's own <pre>.
 const bareCode: ShikiTransformer = {
   root(root) {
@@ -24,6 +38,13 @@ const bareCode: ShikiTransformer = {
   },
   span(node) {
     if (node.properties.style === 'color:inherit') delete node.properties.style;
+  },
+};
+
+// Only for the prompt: browsers honour <wbr> even inside the manual steps' unwrapped <pre>.
+const slashBreaks: ShikiTransformer = {
+  root(root) {
+    root.children = breakAfterSlashes(root.children as ElementContent[]);
   },
 };
 
@@ -73,7 +94,7 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
       Copy this prompt into a coding agent with Terminal access on the Mac where you use Tuna.
       <span id="copy-prompt-status" role="status"></span>
     </p>
-    <pre id="agent-prompt" class="agent-prompt" tabindex="0" aria-label="Prompt for your coding agent">{agentInstructions}{'\n\n'}<Code code={fetchSource} lang="bash" theme={codeTheme} transformers={[bareCode]} />{'\n\n'}<Code code={buildExtension} lang="bash" theme={codeTheme} transformers={[bareCode]} />{'\n\n'}<Code code={installExtension} lang="bash" theme={codeTheme} transformers={[bareCode]} />{'\n\n'}{agentFollowUp}</pre>
+    <pre id="agent-prompt" class="agent-prompt" tabindex="0" aria-label="Prompt for your coding agent">{agentInstructions}{'\n\n'}<Code code={fetchSource} lang="bash" theme={codeTheme} transformers={[bareCode, slashBreaks]} />{'\n\n'}<Code code={buildExtension} lang="bash" theme={codeTheme} transformers={[bareCode, slashBreaks]} />{'\n\n'}<Code code={installExtension} lang="bash" theme={codeTheme} transformers={[bareCode, slashBreaks]} />{'\n\n'}{agentFollowUp}</pre>
   </section>
 
   <section class="source install-card card glass-panel glass-rainbow" aria-labelledby="build-from-source">
@@ -127,7 +148,6 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
     --code-variable: light-dark(oklch(41% .13 249), oklch(84% .10 249));
     --code-comment: var(--muted-ink);
     max-inline-size: 56rem;
-    margin-inline: auto;
   }
   .guide h1 {
     max-inline-size: 15ch;
@@ -168,7 +188,26 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
     border-radius: .65rem;
     background-color: color-mix(in oklch, var(--paper) 65%, oklch(none none none / 0));
     white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+  }
+  /* Fade the right edge while a command block has more to scroll. */
+  @property --code-fade {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+  @keyframes code-fade {
+    from, 96% { --code-fade: var(--space-l); }
+    to { --code-fade: 0px; }
+  }
+  @supports (animation-timeline: scroll()) {
+    .steps pre {
+      animation: code-fade linear both;
+      animation-timeline: scroll(self inline);
+      mask-image: linear-gradient(to left in oklch, oklch(0% 0 0 / 0), oklch(0% 0 0) var(--code-fade));
+    }
+    /* The mask would clip the focus ring. */
+    .steps pre:focus-visible { mask-image: none; }
   }
   .agent-header {
     display: flex;

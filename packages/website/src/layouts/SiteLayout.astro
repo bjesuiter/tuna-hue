@@ -35,6 +35,7 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     <link rel="icon" href={base + '/favicon.svg'} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={base + '/apple-touch-icon.png'} />
     <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href={base + '/sitemap-index.xml'} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Tuna Hue Control" />
     <meta property="og:title" content={title} />
@@ -45,6 +46,7 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Tuna Hue Control: Lights at your fingertips. Tuna's launcher window with Living Room selected and the Turn Off action." />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="oklch(100% 0 0)" />
     <script is:inline>
       if (new URLSearchParams(location.search).get('lamp') === 'off') {
         document.documentElement.dataset.lamp = 'off';
@@ -105,9 +107,10 @@ const shareImage = new URL(base + '/og.png', Astro.site);
 </html>
 
 <script>
-  import { setLamp, syncLampLinks } from '../components/lamp-state';
+  import { setLamp, syncLampLinks, syncThemeColor } from '../components/lamp-state';
 
   syncLampLinks();
+  syncThemeColor();
 
   const menuToggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
   const menuLinks = document.querySelector<HTMLElement>('#main-menu-links');
@@ -130,7 +133,8 @@ const shareImage = new URL(base + '/og.png', Astro.site);
       menuLinks.style.setProperty('--menu-top', `${trigger.bottom + window.scrollY}px`);
       menuLinks.style.setProperty('--menu-right-edge', `${trigger.right + window.scrollX}px`);
     });
-    new ResizeObserver(syncMenu).observe(header);
+    // Deferred: syncMenu resizes the header, which would re-trigger the observer in the same frame.
+    new ResizeObserver(() => requestAnimationFrame(syncMenu)).observe(header);
     syncMenu();
   }
 
@@ -198,6 +202,7 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     --card-radius: 1rem;
     --pill-radius: 2rem;
     --tap-target: 2.75rem;
+    --header-height: 3.8rem;
 
     /* Type scale */
     --font-sans: var(--font-geist);
@@ -243,7 +248,7 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    min-height: 3.8rem;
+    min-height: var(--header-height);
     gap: var(--space-3xs) var(--space-s);
     padding-block: var(--space-2xs);
     border-bottom: 1px solid var(--line);
@@ -404,6 +409,6 @@ const shareImage = new URL(base + '/og.png', Astro.site);
   }
 
   @media (min-width: 48rem) {
-    header { min-height: 5rem; }
+    :root { --header-height: 5rem; }
   }
 </style>

@@ -9,6 +9,12 @@ export function syncLampLinks() {
   }
 }
 
+// Browser chrome follows the page background, which the lamp switches.
+export function syncThemeColor() {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (meta) meta.content = getComputedStyle(document.documentElement).backgroundColor;
+}
+
 export function setLamp(lit: boolean) {
   const url = new URL(window.location.href);
   if (lit) {
@@ -20,4 +26,5 @@ export function setLamp(lit: boolean) {
   }
   history.replaceState(history.state, '', url);
   syncLampLinks();
+  syncThemeColor();
 }

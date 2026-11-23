@@ -58,7 +58,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     text-underline-offset: .23em;
     text-decoration-color: var(--muted-ink);
   }
-  .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+  .hero, .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
   .requirements-bar {
     border-radius: var(--card-radius);
     background-color: color-mix(in oklch, var(--paper) 52%, oklch(none none none / 0));
@@ -102,6 +102,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
 
   @media (min-width: 48rem) and (min-height: 30rem) {
+    /* The hero fills the window between the header and the fixed requirements bar. */
+    .hero {
+      --hero-height: calc(100dvh - var(--header-height) - var(--requirements-height));
+      min-block-size: var(--hero-height);
+      padding-block: var(--space-l);
+      align-content: center;
+    }
+    /* Shorter windows trim the stage; 7rem leaves room for the demo caption and console. */
+    .hero :global(.stage) { max-block-size: calc(var(--hero-height) - 2 * var(--space-l) - 7rem); }
     .requirements { min-block-size: var(--requirements-height); }
     .requirements-bar {
       position: fixed;
