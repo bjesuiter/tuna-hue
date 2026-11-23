@@ -1,6 +1,7 @@
 ---
 import { Font } from 'astro:assets';
 import AmbientBackground from '../components/AmbientBackground.astro';
+import BuildInfo from '../components/BuildInfo.astro';
 import LampGlobe from '../components/LampGlobe.astro';
 
 interface Props {
@@ -103,7 +104,9 @@ const shareImage = new URL(base + '/og.png', Astro.site);
       <main>
         <slot />
       </main>
-      <slot name="footer" />
+      <slot name="footer">
+        <footer><BuildInfo /></footer>
+      </slot>
     </div>
   </body>
 </html>

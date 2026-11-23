@@ -1,0 +1,28 @@
+---
+const builtAt = import.meta.env.BUILD_TIME;
+const commit = import.meta.env.BUILD_COMMIT;
+const shortCommit = commit.slice(0, 7);
+const date = new Intl.DateTimeFormat('en-GB', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'UTC',
+}).format(new Date(builtAt));
+---
+
+<p class="build-info">
+  Built <time datetime={builtAt}>{date} UTC</time>
+  {commit && (
+    <> · <a href={`https://github.com/bjesuiter/tuna-hue/commit/${commit}`} aria-label={`Commit ${shortCommit} on GitHub`}>{shortCommit}</a></>
+  )}
+</p>
+
+<style>
+  .build-info {
+    color: var(--muted-ink);
+    font-size: var(--text-xs);
+    padding-block: var(--space-2xs);
+    text-align: center;
+  }
+  a { text-decoration: none; }
+  a:is(:hover, :focus-visible) { text-decoration: underline; }
+</style>
