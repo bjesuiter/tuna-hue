@@ -1,0 +1,129 @@
+<div data-ambient-background>
+  <div class="field" aria-hidden="true">
+    <span class="glow peach"></span>
+    <span class="glow lilac"></span>
+    <span class="glow mint"></span>
+  </div>
+  <button type="button" hidden>Pause ambient motion</button>
+</div>
+
+<style>
+  [data-ambient-background] { position: relative; }
+  .field {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 82% 22%, #fdf1e9, transparent 70%);
+    filter: saturate(var(--page-saturation, 1));
+    opacity: var(--ambient-opacity, 1);
+  }
+  .glow {
+    position: absolute;
+    inline-size: max(65vw, 25rem);
+    block-size: max(83%, 27rem);
+    background: radial-gradient(ellipse closest-side, var(--light), transparent);
+  }
+  .peach { --light: #ffc8a66e; inset: -15% auto auto -24%; }
+  .lilac { --light: #d5b8fa66; inset: 21% auto auto 19%; }
+  .mint { --light: #9fddd455; inset: -10% -23% auto auto; }
+
+  button {
+    position: absolute;
+    inset: .55rem 0 auto auto;
+    z-index: 1;
+    border: 0;
+    border-radius: .35rem;
+    padding: .25rem .4rem;
+    color: var(--muted-ink);
+    background: transparent;
+    font-size: .75rem;
+    cursor: pointer;
+  }
+  button:hover { text-decoration: underline; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .field { transition: filter 450ms ease, opacity 450ms ease; }
+  }
+</style>
+
+<script>
+  const background = document.querySelector('[data-ambient-background]');
+  if (background) {
+    const button = background.querySelector('button')!;
+    const glows = background.querySelectorAll('.glow');
+    const motion = matchMedia('(prefers-reduced-motion: no-preference)');
+    let animations: Animation[] = [];
+    let paused = false;
+    let boost = 0;
+    let frame = 0;
+    let lastFrame = 0;
+    let lastScroll = window.scrollY;
+
+    function resetSpeed() {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      boost = 0;
+      for (const animation of animations) animation.updatePlaybackRate(1);
+    }
+
+    function updateMotion() {
+      resetSpeed();
+      for (const animation of animations) animation.cancel();
+      animations = [];
+      button.hidden = !motion.matches;
+      if (!motion.matches) return;
+
+      animations = Array.from(glows, (glow, index) => glow.animate([
+        'none',
+        'translate(19%, 12%) scale(1.14)',
+        'translate(3%, 27%) scale(.93)',
+        'translate(-17%, 6%) scale(1.06)',
+        'none',
+      ].map(transform => ({ transform, easing: 'ease-in-out' })), {
+        duration: 16000 + index * 3700,
+        delay: -index * 5400,
+        iterations: Infinity,
+      }));
+      if (paused) for (const animation of animations) animation.pause();
+    }
+
+    function easeBack(now: number) {
+      boost *= Math.exp(-(now - lastFrame) / 330);
+      if (boost < .025) {
+        resetSpeed();
+        return;
+      }
+
+      for (const animation of animations) animation.updatePlaybackRate(1 + boost);
+      lastFrame = now;
+      frame = requestAnimationFrame(easeBack);
+    }
+
+    window.addEventListener('scroll', () => {
+      const distance = Math.abs(window.scrollY - lastScroll);
+      lastScroll = window.scrollY;
+      if (!distance || paused || !animations.length) return;
+
+      boost = Math.min(3, boost + distance / 85);
+      if (!frame) {
+        lastFrame = performance.now();
+        frame = requestAnimationFrame(easeBack);
+      }
+    }, { passive: true });
+
+    button.addEventListener('click', () => {
+      paused = !paused;
+      resetSpeed();
+      for (const animation of animations) {
+        if (paused) animation.pause();
+        else animation.play();
+      }
+      button.textContent = paused ? 'Resume ambient motion' : 'Pause ambient motion';
+    });
+
+    motion.addEventListener('change', updateMotion);
+    updateMotion();
+  }
+</script>

@@ -9,28 +9,18 @@ const fragmentSource = `
 precision mediump float;
 uniform vec2 resolution;
 uniform float intensity;
-uniform float phase;
 
 void main() {
   vec2 p = (gl_FragCoord.xy / resolution - 0.5) * 2.0;
-  p.x *= resolution.x / resolution.y;
-  p = mat2(0.97, -0.24, 0.24, 0.97) * p;
-  p.y *= 2.5;
-  float angle = atan(p.y, p.x);
-  float radius = length(p);
-  float ripple = sin(angle * 3.0 - phase * 6.283);
-  float distance = radius - (1.13 + 0.08 * ripple);
-  float ring = exp(-50.0 * distance * distance);
-  float halo = exp(-10.0 * distance * distance);
-  vec3 rainbow = 0.64 + 0.35 * cos(
-    angle + phase * 6.283 + radius * 2.0 + vec3(0.0, 2.094, 4.189)
+  float alpha = exp(-3.8 * dot(p, p));
+  vec3 rainbow = 0.75 + 0.24 * cos(
+    p.x * 4.0 + p.y * 2.0 + vec3(0.0, 2.094, 4.189)
   );
-  float glint = 0.5 + 0.5 * cos(angle - phase * 6.283);
-  gl_FragColor = vec4(rainbow, intensity * (ring * (0.35 + glint * 0.37) + halo * 0.17));
+  gl_FragColor = vec4(rainbow, intensity * alpha * 0.26);
 }
 `;
 
-export function createOrbit(canvas: HTMLCanvasElement) {
+export function createAmbientLight(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext('webgl', { premultipliedAlpha: false, antialias: false });
   if (!gl) return;
 
@@ -62,10 +52,9 @@ export function createOrbit(canvas: HTMLCanvasElement) {
 
   const resolution = gl.getUniformLocation(program, 'resolution');
   const intensity = gl.getUniformLocation(program, 'intensity');
-  const phase = gl.getUniformLocation(program, 'phase');
 
   return {
-    draw(light: number, rotation: number) {
+    draw(light: number) {
       const dpr = Math.min(window.devicePixelRatio, 2);
       const width = Math.round(canvas.clientWidth * dpr);
       const height = Math.round(canvas.clientHeight * dpr);
@@ -77,7 +66,6 @@ export function createOrbit(canvas: HTMLCanvasElement) {
       gl.viewport(0, 0, width, height);
       gl.uniform2f(resolution, width, height);
       gl.uniform1f(intensity, light);
-      gl.uniform1f(phase, rotation);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
   };

@@ -84,7 +84,7 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
 <style>
   .journey { padding-block: clamp(2rem, 6vw, 5rem) 5rem; }
   h2, h3 { margin: 0; line-height: 1.05; letter-spacing: -.045em; }
-  h2 { max-width: 14ch; font-size: clamp(2.75rem, 7vw, 6rem); scroll-margin-block-start: 1.5rem; }
+  h2 { font-family: var(--heading-font); max-width: 14ch; font-size: clamp(2.75rem, 7vw, 6rem); scroll-margin-block-start: 1.5rem; }
   h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
   .steps { list-style: none; margin: 2.5rem 0; padding: 0; display: grid; gap: 1.25rem; }
   li {
@@ -93,9 +93,9 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
     align-items: center;
     gap: clamp(1rem, 3vw, 2.5rem);
     padding: clamp(1.1rem, 3vw, 2.3rem);
-    border: 1px solid var(--ink);
+    border: 1px solid var(--line);
     border-radius: 1rem;
-    box-shadow: 5px 5px var(--ink);
+    box-shadow: var(--soft-shadow);
   }
   .number {
     display: inline-grid;
@@ -103,9 +103,9 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
     inline-size: 2.2rem;
     aspect-ratio: 1;
     margin-bottom: .85rem;
-    border: 1px solid var(--ink);
+    border: 1px solid var(--line);
     border-radius: 50%;
-    background: var(--lime);
+    background: var(--accent);
     font: 700 .75rem ui-monospace, monospace;
   }
   p { margin-top: .75rem; color: var(--muted-ink); max-width: 65ch; }
