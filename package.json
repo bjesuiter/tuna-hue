@@ -4,7 +4,7 @@
   "packageManager": "bun@1.4.5",
   "workspaces": ["packages/*"],
   "scripts": {
-    "dev": "bun --filter @tuna-hue/website dev",
+    "dev": "bgproc start -n tuna-hue-website -w 20 -- bun --filter @tuna-hue/website dev --ignore-lock",
     "build": "bun --filter @tuna-hue/website build",
     "preview": "bun --filter @tuna-hue/website preview",
     "build:plugin": "bun --filter @tuna-hue/plugin build"

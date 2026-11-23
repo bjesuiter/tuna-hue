@@ -45,7 +45,8 @@ Copy the returned `success.username` into Tuna’s **Application key** field. If
 
 ## Marketing site
 
-From the repository root, run `bun install` and then `bun run dev`. Open
-`http://localhost:4321/tuna-hue/`. The static build command is `bun run build`,
+With `bgproc` installed, run `bun install` and then `bun run dev` from the
+repository root. Open `http://localhost:4321/tuna-hue/`. Run
+`bgproc stop -n tuna-hue-website` to stop the server. The static build command is `bun run build`,
 which writes to `packages/website/dist`. Run `bun run preview` to serve that build
 locally. The Astro config uses the repository GitHub Pages path.
