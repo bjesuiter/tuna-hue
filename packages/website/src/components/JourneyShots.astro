@@ -6,7 +6,8 @@ type Bounds = [x: number, y: number, width: number, height: number];
 
 interface Props {
   shots: {
-    image: ImageMetadata;
+    light: ImageMetadata;
+    dark: ImageMetadata;
     alt: string;
     caption?: string;
     /** The part of the screenshot the preview dialog shows, in image pixels. */
@@ -25,18 +26,23 @@ const shadow = 16;
 const shots = await Promise.all(Astro.props.shots.map(async shot => {
   const [bx, by, bw, bh] = shot.thumbBounds ?? shot.previewBounds;
   const [x, y, width, height] = [bx + shadow, by + shadow, bw - 2 * shadow, bh - 2 * shadow];
-  const { image } = shot;
-  const preview = await getImage({ src: image, format: 'webp', quality: 90 });
+  // The capture pipeline gives both appearances the same dimensions and crop.
+  const { light } = shot;
+  const variants = await Promise.all((['light', 'dark'] as const).map(async appearance => {
+    const image = shot[appearance];
+    const preview = await getImage({ src: image, format: 'webp', quality: 90 });
+    return { appearance, image, preview: preview.src };
+  }));
   return {
     ...shot,
     width,
-    preview: preview.src,
-    renderWidth: Math.min(image.width, Math.ceil(thumbPixels * image.width / width)),
+    variants,
+    renderWidth: Math.min(light.width, Math.ceil(thumbPixels * light.width / width)),
     crop: [
       `--aspect: ${width / height}`,
       `--left: ${-100 * x / width}%`,
       `--top: ${-100 * y / height}%`,
-      `--width: ${100 * image.width / width}%`,
+      `--width: ${100 * light.width / width}%`,
     ].join('; '),
   };
 }));
@@ -50,20 +56,23 @@ const widest = Math.max(...shots.map(({ width }) => width));
 ---
 <div class="shots-area">
 <div class:list={['shots', { single: shots.length === 1 }]} style={`--columns: ${columns}`}>
-  {shots.map(({ image, alt, caption, preview, previewBounds, renderWidth, crop, width }) => (
+  {shots.map(({ variants, alt, caption, previewBounds, renderWidth, crop, width }) => (
     <figure>
-      <a
-        class="shot"
-        style={`${crop}; --share: ${width / widest}`}
-        href={preview}
-        data-image-preview
-        data-image-width={image.width}
-        data-image-height={image.height}
-        data-preview-bounds={previewBounds.join(' ')}
-        aria-label={`Open screenshot preview. ${alt}`}
-      >
-        <Image src={image} alt={alt} width={renderWidth} loading="lazy" />
-      </a>
+      {variants.map(({ appearance, image, preview }) => (
+        <a
+          class="shot"
+          data-appearance={appearance}
+          style={`${crop}; --share: ${width / widest}`}
+          href={preview}
+          data-image-preview
+          data-image-width={image.width}
+          data-image-height={image.height}
+          data-preview-bounds={previewBounds.join(' ')}
+          aria-label={`Open screenshot preview. ${alt}`}
+        >
+          <Image src={image} alt={alt} width={renderWidth} loading="lazy" />
+        </a>
+      ))}
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
   ))}
@@ -98,6 +107,9 @@ const widest = Math.max(...shots.map(({ width }) => width));
     border-radius: 2.6% / calc(2.6% * var(--aspect));
     cursor: zoom-in;
   }
+  .shot[data-appearance="dark"],
+  :global(:root[data-lamp="off"]) .shot[data-appearance="light"] { display: none; }
+  :global(:root[data-lamp="off"]) .shot[data-appearance="dark"] { display: block; }
   /* A lone screenshot stays near the size of one in a two-shot row. */
   .single .shot { --max-width: 24rem; }
   /* After the base .shot rule: in a row, the column already sets the scale. */
