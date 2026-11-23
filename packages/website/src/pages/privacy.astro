@@ -1,0 +1,32 @@
+---
+import { Content as PrivacyNotice } from '../../../plugin/PRIVACY.md';
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+<SiteLayout
+  title="Tuna Hue Control privacy"
+  description="How Tuna Hue Control discovers Philips Hue Bridges, uses local network access, and stores application keys."
+>
+  <article class="privacy page-content">
+    <PrivacyNotice />
+  </article>
+</SiteLayout>
+
+<style>
+  .privacy {
+    display: grid;
+    gap: var(--space-s);
+    max-inline-size: 70ch;
+  }
+
+  .privacy :global(h1) { margin-block-end: var(--space-xs); }
+  .privacy :global(ul) {
+    display: grid;
+    gap: var(--space-xs);
+    margin: 0;
+    padding-inline-start: var(--space-s);
+  }
+  .privacy :global(code) {
+    font-family: var(--font-mono);
+    overflow-wrap: anywhere;
+  }
+</style>

@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/website/**'
       - '!packages/website/AGENTS.md'
+      - 'packages/plugin/PRIVACY.md'
       - 'packages/*/package.json'
       - 'package.json'
       - 'bun.lock'
