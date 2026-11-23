@@ -1,4 +1,5 @@
 ---
+import { Font } from 'astro:assets';
 import AmbientBackground from '../components/AmbientBackground.astro';
 import LampGlobe from '../components/LampGlobe.astro';
 
@@ -29,6 +30,8 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <Font cssVariable="--font-geist" preload={[{ weight: '100 900' }]} />
+    <Font cssVariable="--font-geist-mono" />
     <link rel="icon" href={base + '/favicon.svg'} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={base + '/apple-touch-icon.png'} />
     <link rel="canonical" href={canonical} />
@@ -160,6 +163,7 @@ const shareImage = new URL(base + '/og.png', Astro.site);
 
   :root {
     color-scheme: light;
+    scrollbar-gutter: stable;
     --paper: oklch(100% 0 0);
     --ink: oklch(19.91% 0.01 294.6);
     --muted-ink: oklch(46.15% 0.0243 294.6);
@@ -196,8 +200,8 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     --tap-target: 2.75rem;
 
     /* Type scale */
-    --font-sans: 'Avenir Next', system-ui, sans-serif;
-    --font-mono: ui-monospace, monospace;
+    --font-sans: var(--font-geist);
+    --font-mono: var(--font-geist-mono);
     --text-xs: .75rem;
     --text-s: .875rem;
     --text-m: 1rem;
@@ -220,8 +224,8 @@ const shareImage = new URL(base + '/og.png', Astro.site);
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 5px; }
 
   h1, h2, h3 { font-family: var(--font-sans); font-weight: var(--weight-semibold); text-wrap: balance; }
-  h1 { font-size: var(--text-3xl); line-height: .98; letter-spacing: -.055em; }
-  h2 { font-size: var(--text-2xl); line-height: 1.1; letter-spacing: -.035em; }
+  h1 { font-size: var(--text-3xl); line-height: .98; letter-spacing: -.04em; }
+  h2 { font-size: var(--text-2xl); line-height: 1.1; letter-spacing: -.025em; }
   h3 { font-size: var(--text-xl); line-height: 1.2; letter-spacing: -.02em; }
 
   .label {
