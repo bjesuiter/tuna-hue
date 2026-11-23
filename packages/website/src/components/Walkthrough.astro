@@ -15,14 +15,14 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
 const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
 ---
 
-<section class="journey" aria-labelledby="walkthrough">
+<section class="journey page-content" aria-labelledby="walkthrough">
   <h1 id="walkthrough">From bridge to light switch.</h1>
   <p>See how Tuna Hue Control pairs with your Hue Bridge and lets you switch rooms and zones from Tuna.</p>
 
   <ol class="steps" role="list">
-    <li class="glass-panel glass-rainbow">
+    <li class="card glass-panel glass-rainbow">
       <div class="step-copy">
-        <span class="number" aria-hidden="true">01</span>
+        <span class="number label" aria-hidden="true">01</span>
         <h2>Find Hue in Tuna</h2>
         <p>Once the extension is installed, open Tuna, search for <strong>Hue</strong>, and run <strong>Connect First Hue Bridge</strong>.</p>
         <p>If the command is missing, set <strong>Sources → Hue Groups → In global search</strong> to <strong>All</strong>.</p>
@@ -32,9 +32,9 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
       ]} />
     </li>
 
-    <li class="glass-panel glass-rainbow">
+    <li class="card glass-panel glass-rainbow">
       <div class="step-copy">
-        <span class="number" aria-hidden="true">02</span>
+        <span class="number label" aria-hidden="true">02</span>
         <h2>Pair your bridge</h2>
         <p>Keep your Mac and bridge on the same network. Allow local network access if macOS asks. Select your bridge, choose <strong>Continue</strong>, then press the physical link button when prompted.</p>
       </div>
@@ -45,9 +45,9 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
       ]} />
     </li>
 
-    <li class="glass-panel glass-rainbow">
+    <li class="card glass-panel glass-rainbow">
       <div class="step-copy">
-        <span class="number" aria-hidden="true">03</span>
+        <span class="number label" aria-hidden="true">03</span>
         <h2>Control a room or zone</h2>
         <p>Search by name and look for <strong>Hue Room</strong> or <strong>Hue Zone</strong> in the result details. Press <kbd>Tab</kbd> to choose an available action and <kbd>Return</kbd> to run it.</p>
       </div>
@@ -58,7 +58,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
     </li>
   </ol>
 
-  <a class="primary-link glass-control" href={installHref} data-lamp-link>Install now <span aria-hidden="true">→</span></a>
+  <a class="pill" href={installHref} data-lamp-link>Install now <span aria-hidden="true">→</span></a>
 
   <section class="help" aria-labelledby="help-title">
     <h2 id="help-title">Bridge setup and troubleshooting</h2>
@@ -89,29 +89,26 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
 <JourneyImagePreview />
 
 <style>
-  .journey { padding-block: clamp(2rem, 6vw, 5rem) 5rem; }
-  h1, h2 { margin: 0; line-height: 1.05; letter-spacing: -.045em; }
-  h1 { font-family: var(--heading-font); max-width: 15ch; font-size: clamp(2.75rem, 7vw, 6rem); }
-  h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
-  .steps { list-style: none; margin: 2.5rem 0; padding: 0; display: grid; gap: 1.25rem; }
+  h1 { max-width: 15ch; }
+  h1 + p { margin-top: var(--space-s); font-size: var(--text-l); }
+  .steps { list-style: none; margin: var(--section-gap) 0; padding: 0; display: grid; gap: var(--space-m); }
   li {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    gap: clamp(1rem, 3vw, 2.5rem);
-    padding: clamp(1.1rem, 3vw, 2.3rem);
-    border-radius: 1rem;
+    gap: clamp(var(--space-s), 3vw, var(--space-xl));
   }
-  .number { display: block; margin-bottom: .65rem; color: var(--muted-ink); font: 700 .75rem ui-monospace, monospace; }
-  p { margin-top: .75rem; color: var(--muted-ink); max-width: 65ch; }
-  kbd { color: var(--ink); font-weight: 650; }
-  .help { margin-top: 3.5rem; }
-  .help h2 { margin-bottom: 1rem; }
+  .number { display: block; margin-bottom: var(--space-xs); color: var(--muted-ink); }
+  p { margin-top: var(--space-xs); color: var(--muted-ink); max-width: 65ch; }
+  kbd { color: var(--ink); font-weight: var(--weight-semibold); }
+  .help { margin-top: var(--section-gap); }
+  .help h2 { margin-bottom: var(--space-s); }
   details { border-top: 1px solid var(--line); }
   details:last-child { border-bottom: 1px solid var(--line); }
-  summary { padding-block: .9rem; font-weight: 750; cursor: pointer; }
-  details p { margin: 0 0 1rem; }
-  details :global(.shots) { margin-bottom: 1.5rem; }
+  summary { padding-block: var(--space-s); font-weight: var(--weight-semibold); cursor: pointer; }
+  details p { margin: 0 0 var(--space-s); }
+  details :global(.shots) { margin-bottom: var(--space-m); }
+  /* Steps need more room than the site-wide 48rem breakpoint to sit beside screenshots. */
   @media (min-width: 52rem) {
     li { grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.4fr); }
   }

@@ -37,7 +37,7 @@ const { shots } = Astro.props;
   .shots {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
-    gap: .85rem;
+    gap: var(--space-s);
   }
   figure { margin: 0; min-width: 0; }
   .shot {
@@ -61,5 +61,5 @@ const { shots } = Astro.props;
   }
   .tiles-only { aspect-ratio: 1.95; }
   .tiles-only img { top: -22%; }
-  figcaption { margin-top: .45rem; font-size: .84rem; font-weight: 650; }
+  figcaption { margin-top: var(--space-2xs); font-size: var(--text-s); font-weight: var(--weight-semibold); }
 </style>

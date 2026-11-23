@@ -9,15 +9,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   title="Tuna Hue Control — Lights at your fingertips"
   description="Turn Philips Hue rooms and zones on or off from the Tuna launcher for macOS."
 >
-  <section class="hero" aria-labelledby="headline">
+  <section class="hero page-content" aria-labelledby="headline">
     <div class="intro">
       <div class="hero-copy">
-        <p class="eyebrow">A Tuna extension for Philips Hue</p>
+        <p class="label">A Tuna extension for Philips Hue</p>
         <h1 id="headline">Lights at your fingertips.</h1>
         <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
       </div>
       <div class="hero-actions">
-        <a class="primary-link glass-control" href={base + '/install/'} data-lamp-link>Install Tuna Hue</a>
+        <a class="pill" href={base + '/install/'} data-lamp-link>Install Tuna Hue</a>
         <a class="walkthrough-link" href={base + '/how-it-works/'} data-lamp-link>See how it works <span aria-hidden="true">→</span></a>
       </div>
     </div>
@@ -25,7 +25,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   </section>
   <footer slot="footer" class="requirements" aria-label="Requirements">
     <div class="requirements-bar glass-panel">
-      <div class="requirements-links">
+      <div class="requirements-links label">
         <a href="https://support.apple.com/en-us/120282" target="_blank" rel="noopener">macOS 15+</a>
         <a href="https://tunaformac.com/" target="_blank" rel="noopener">Tuna 0.113+</a>
         <a href="https://www.philips-hue.com/en-us/p/hue-bridge/046677458478/specifications" target="_blank" rel="noopener">Philips Hue Bridge</a>
@@ -39,54 +39,53 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    gap: 1.8rem;
-    padding-block: clamp(3rem, 7vw, 7rem);
+    gap: var(--space-l);
   }
-  .eyebrow, .requirements-links { font: 600 .72rem/1.5 ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; }
   .hero-copy { container-type: inline-size; }
   .hero h1 {
     max-width: 12ch;
-    margin-block: .9rem 1.2rem;
-    font: 650 clamp(2.8rem, 10vw, 5.5rem)/.98 var(--heading-font);
-    letter-spacing: -.06em;
-    text-wrap: balance;
+    margin-block: var(--space-s);
   }
-  .summary { max-width: 29ch; color: var(--muted-ink); font-size: clamp(1.05rem, 1.5vw, 1.25rem); }
-  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin-block-start: 1.65rem; }
+  .summary { max-width: 29ch; color: var(--muted-ink); font-size: var(--text-l); }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs) var(--space-s); margin-block-start: var(--space-m); }
   .walkthrough-link {
     display: inline-flex;
     align-items: center;
-    gap: .35rem;
-    min-block-size: 2.75rem;
-    font-size: .9rem;
-    font-weight: 600;
+    gap: var(--space-3xs);
+    min-block-size: var(--tap-target);
+    font-size: var(--text-s);
+    font-weight: var(--weight-semibold);
     text-underline-offset: .23em;
     text-decoration-color: var(--muted-ink);
   }
   .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
   .requirements-bar {
-    border-radius: 1rem;
+    border-radius: var(--card-radius);
     background-color: color-mix(in oklch, var(--paper) 52%, oklch(none none none / 0));
     background-image: none;
   }
+  /* Centred under the centred demo while the footer is an inline card. */
   .requirements-links {
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: .7rem 2rem;
-    padding-block: 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
-    padding-inline: 1rem;
+    gap: var(--space-xs) var(--space-l);
+    padding-block: var(--space-s) calc(var(--space-s) + env(safe-area-inset-bottom, 0px));
+    padding-inline: var(--space-s);
   }
   .requirements-links a { text-underline-offset: .25em; }
 
   @media (min-width: 48rem) {
-    .hero { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(1.5rem, 4vw, 4.5rem); }
-    .hero h1 { font-size: clamp(2.6rem, 17cqi, 7rem); }
+    /* 19rem keeps the install pill and walkthrough link on one row. */
+    .hero { grid-template-columns: minmax(19rem, .82fr) minmax(0, 1.18fr); gap: clamp(var(--space-m), 4vw, var(--space-2xl)); }
+    /* The home hero is the one display-size heading; it scales with its column. */
+    .hero h1 { font-size: clamp(2.75rem, 17cqi, 7rem); }
   }
 
   @supports (grid-template-rows: subgrid) {
     @media (min-width: 48rem) {
-      .hero { row-gap: .5rem; }
+      .hero { row-gap: var(--space-2xs); }
       .intro, .hero > :global(.demo) {
         grid-row: span 3;
         display: grid;
@@ -113,10 +112,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       border-radius: 0;
     }
     .requirements-links {
-      max-inline-size: 90rem;
+      justify-content: flex-start;
+      max-inline-size: var(--page-max);
       min-block-size: var(--requirements-height);
       margin-inline: auto;
-      padding-inline: clamp(1.25rem, 5vw, 5rem);
+      padding-inline: var(--page-gutter);
     }
   }
 </style>

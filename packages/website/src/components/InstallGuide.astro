@@ -20,20 +20,20 @@ const agentInstructions = 'Build and install Tuna Hue Control on this Mac. Check
 const agentFollowUp = 'Tell me when the framework is installed and show me any errors you encounter. I’ll restart Tuna, make the trust decision if prompted, and pair my Hue Bridge with Connect First Hue Bridge.';
 ---
 
-<article class="guide" aria-labelledby="install-title" data-install-guide>
+<article class="guide page-content" aria-labelledby="install-title" data-install-guide>
   <h1 id="install-title">Install Tuna Hue Control</h1>
 
-  <section class="install-card glass-panel glass-rainbow" aria-labelledby="store-title">
+  <section class="install-card card glass-panel glass-rainbow" aria-labelledby="store-title">
     <h2 id="store-title">Install from the extension store</h2>
     <p class="availability">Tuna Hue Control might come to the store soon.</p>
     <p>Extension developers and Tuna’s maintainer work together to review each extension by hand before it appears in the store.</p>
     <p>In the meantime, you can <a href="#agent-build">ask your agent to build it</a> or <a href="#build-from-source">build it manually</a>.</p>
   </section>
 
-  <section class="agent install-card glass-panel glass-rainbow" aria-labelledby="agent-build">
+  <section class="agent install-card card glass-panel glass-rainbow" aria-labelledby="agent-build">
     <div class="agent-header">
       <h2 id="agent-build">Let your agent build from source</h2>
-      <button type="button" class="copy-prompt glass-control" command="--copy" commandfor="agent-prompt" hidden>
+      <button type="button" class="copy-prompt pill" command="--copy" commandfor="agent-prompt" hidden>
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round">
           <rect x="5.25" y="5.25" width="8.5" height="8.5" rx="1.25" />
           <path d="M3.5 10.75A1.25 1.25 0 0 1 2.25 9.5v-6A1.25 1.25 0 0 1 3.5 2.25h6a1.25 1.25 0 0 1 1.25 1.25" />
@@ -48,10 +48,10 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
     <pre id="agent-prompt" class="agent-prompt" tabindex="0" aria-label="Prompt for your coding agent">{agentInstructions}{'\n\n'}<code class="language-bash">{fetchSource}</code>{'\n\n'}<code class="language-bash">{buildExtension}</code>{'\n\n'}<code class="language-bash">{installExtension}</code>{'\n\n'}{agentFollowUp}</pre>
   </section>
 
-  <section class="source" aria-labelledby="build-from-source">
+  <section class="source install-card card glass-panel glass-rainbow" aria-labelledby="build-from-source">
     <h2 id="build-from-source">Build from source (manually)</h2>
 
-    <div class="install-card requirements glass-panel glass-rainbow">
+    <div class="requirements">
       <h3>Before you start</h3>
       <ul>
         <li>macOS 15 or later</li>
@@ -61,24 +61,28 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
       </ul>
     </div>
 
-    <ol class="steps">
+    <ol class="steps" role="list">
       <li>
+        <span class="number label" aria-hidden="true">01</span>
         <h3>Get the source</h3>
         <p>Open Terminal and run these commands to download the source and enter its folder.</p>
         <pre tabindex="0" aria-label="Download the source"><code class="language-bash">{fetchSource}</code></pre>
       </li>
       <li>
+        <span class="number label" aria-hidden="true">02</span>
         <h3>Build the extension</h3>
         <p>Run this in the same Terminal window. Xcode downloads the pinned TunaKit dependency on the first build.</p>
         <pre tabindex="0" aria-label="Build the extension with Xcode"><code class="language-bash">{buildExtension}</code></pre>
         <p>If Terminal reports that the active developer directory points to Command Line Tools, select your full Xcode installation under <strong>Xcode → Settings → Locations → Command Line Tools</strong> and rerun the build.</p>
       </li>
       <li>
+        <span class="number label" aria-hidden="true">03</span>
         <h3>Copy the extension to Tuna</h3>
         <p>After the build succeeds, create Tuna’s developer extensions folder and copy the framework into it.</p>
         <pre tabindex="0" aria-label="Copy the framework into Tuna’s developer extensions folder"><code class="language-bash">{installExtension}</code></pre>
       </li>
       <li>
+        <span class="number label" aria-hidden="true">04</span>
         <h3>Restart Tuna and connect your bridge</h3>
         <p>Quit and reopen Tuna so it loads the framework. If Tuna asks you to trust the extension, confirm only if you trust the source you built. Open <strong>Settings → Sources</strong> and check that <strong>Hue Groups</strong> appears.</p>
         <p>Search for <strong>Hue</strong> and run <strong>Connect First Hue Bridge</strong>. If the command is missing, set <strong>Hue Groups → In global search</strong> to <strong>All</strong>.</p>
@@ -92,47 +96,36 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
   .guide {
     max-inline-size: 56rem;
     margin-inline: auto;
-    padding-block: clamp(2.5rem, 7vw, 6rem);
   }
   .guide h1 {
     max-inline-size: 15ch;
-    margin: 0 0 2rem;
-    font: 650 clamp(2.6rem, 8vw, 5.25rem)/.98 var(--heading-font);
-    letter-spacing: -.055em;
-    text-wrap: balance;
+    margin-block-end: var(--space-l);
   }
-  h2, h3 {
-    margin: 0;
-    font: 650 clamp(1.2rem, 3vw, 1.5rem)/1.2 var(--heading-font);
-    letter-spacing: -.025em;
-  }
-  h2 { font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem); }
   p { color: var(--muted-ink); }
-  .install-card {
-    padding: clamp(1.15rem, 3vw, 1.75rem);
-    border-radius: 1rem;
-  }
-  .install-card p { margin-block-start: .6rem; }
-  .availability { color: var(--ink); font-weight: 650; }
-  .agent, .source { margin-block-start: clamp(2rem, 5vw, 3rem); }
-  .agent { scroll-margin-block-start: 1.5rem; }
-  .source h2 { margin-block-end: 1rem; scroll-margin-block-start: 1.5rem; }
-  .requirements ul { margin-block: .6rem 0; padding-inline-start: 1.2rem; }
+  .install-card p { margin-block-start: var(--space-xs); }
+  .availability { color: var(--ink); font-weight: var(--weight-semibold); }
+  .agent, .source { margin-block-start: var(--section-gap); }
+  .agent { scroll-margin-block-start: var(--space-m); }
+  .source h2 { scroll-margin-block-start: var(--space-m); }
+  .requirements { margin-block-start: var(--space-m); }
+  .requirements ul { margin-block: var(--space-xs) 0; padding-inline-start: var(--space-m); color: var(--muted-ink); }
   .steps {
-    margin-block: 2rem;
-    padding-inline-start: 1.65rem;
+    margin-block: var(--space-m) 0;
+    padding: 0;
+    list-style: none;
   }
   .steps li {
-    padding: 1.25rem 0 1.25rem .35rem;
+    padding-block: var(--space-m);
     border-block-start: 1px solid var(--line);
   }
-  .steps li::marker { font-weight: 650; }
-  .steps p { margin-block-start: .6rem; }
+  .steps li:last-child { padding-block-end: 0; }
+  .number { display: block; margin-block-end: var(--space-xs); color: var(--muted-ink); }
+  .steps p { margin-block-start: var(--space-xs); }
   pre {
     max-inline-size: 100%;
-    margin-block: .8rem 0;
+    margin-block: var(--space-xs) 0;
     overflow: auto;
-    font: .825rem/1.65 ui-monospace, monospace;
+    font: var(--text-s)/1.65 var(--font-mono);
   }
   code { font: inherit; }
   code::highlight(function),
@@ -144,11 +137,11 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
   code::highlight(numeric) { color: light-dark(oklch(41% .13 249), oklch(84% .10 249)); }
   code::highlight(comment) { color: var(--muted-ink); }
   .agent-prompt {
-    padding-block: .85rem;
-    padding-inline: 1rem;
+    padding-block: var(--space-xs);
+    padding-inline: var(--space-s);
     border: 1px solid var(--glass-edge);
     border-radius: .65rem;
-    background-color: color-mix(in oklch, var(--paper) 65%, transparent);
+    background-color: color-mix(in oklch, var(--paper) 65%, oklch(none none none / 0));
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
@@ -156,20 +149,7 @@ const agentFollowUp = 'Tell me when the framework is installed and show me any e
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: .75rem;
-  }
-  .copy-prompt:not([hidden]) {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    gap: .45rem;
-    min-block-size: 2.75rem;
-    padding-inline: .85rem;
-    border-radius: 2rem;
-    color: var(--ink);
-    font-size: .85rem;
-    font-weight: 650;
-    cursor: pointer;
+    gap: var(--space-xs);
   }
 </style>
 

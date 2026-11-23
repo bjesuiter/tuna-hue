@@ -1,6 +1,6 @@
 <dialog id="journey-image-preview" aria-label="Screenshot preview" closedby="any">
   <form method="dialog">
-    <button class="glass-control" autofocus>Close <span aria-hidden="true">×</span></button>
+    <button class="pill" autofocus>Close <span aria-hidden="true">×</span></button>
   </form>
   <div class="preview-area">
     <div class="preview-frame"></div>
@@ -26,24 +26,16 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
-    gap: .5rem;
+    gap: var(--space-2xs);
   }
   dialog:modal { overscroll-behavior: contain; }
   dialog::backdrop {
     overflow: hidden;
     overscroll-behavior: contain;
-    background: oklch(96% .01 259 / .96);
+    /* Older engines do not inherit custom properties into ::backdrop. */
+    background: var(--backdrop, oklch(96% 0.01 259 / 0.96));
   }
-  :global([data-lamp="off"]) dialog::backdrop { background: oklch(14% .03 258 / .96); }
   form { justify-self: end; }
-  button {
-    min-block-size: 2.75rem;
-    padding-inline: .95rem;
-    border-radius: 2rem;
-    color: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
   button:focus-visible { outline-offset: -3px; }
   .preview-area {
     container-type: size;
@@ -71,7 +63,7 @@
       max-inline-size: calc(100% - 1rem);
       max-block-size: calc(100dvh - 1rem);
       margin: auto;
-      padding: .75rem;
+      padding: var(--space-xs);
     }
     dialog[open] { grid-template-rows: auto auto; }
     .preview-area { container-type: normal; display: block; }

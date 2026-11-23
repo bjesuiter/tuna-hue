@@ -44,7 +44,7 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
           <a href={base + '/'} data-lamp-link>Tuna Hue Control</a>
         </div>
         <nav aria-label="Main">
-          <button class="menu-toggle glass-control" type="button" popovertarget="main-menu-links" aria-controls="main-menu-links" hidden>
+          <button class="menu-toggle pill" type="button" popovertarget="main-menu-links" aria-controls="main-menu-links" hidden>
             Menu
             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
@@ -155,21 +155,68 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     --glass-control-glint: oklch(100% 0 0 / 0.329);
     --glass-edge: oklch(61.83% 0.0531 258 / 0.329);
     --glass-glint: oklch(100% 0 0 / 0.733);
+    --backdrop: oklch(96% 0.01 259 / 0.96);
     --glass-shadow: 0 16px 38px -26px oklch(48.11% 0.0813 263.7 / 0.451), 0 3px 12px oklch(60.94% 0.0706 263.4 / 0.141);
-    --heading-font: 'Avenir Next', system-ui, sans-serif;
+
+    /* Spacing scale */
+    --space-3xs: .25rem;
+    --space-2xs: .5rem;
+    --space-xs: .75rem;
+    --space-s: 1rem;
+    --space-m: 1.5rem;
+    --space-l: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4rem;
+    --space-3xl: 6rem;
+
+    /* Layout */
+    --page-max: 90rem;
+    --page-gutter: clamp(1.25rem, 5vw, 5rem);
+    --page-block: clamp(var(--space-xl), 7vw, var(--space-3xl));
+    --section-gap: clamp(var(--space-l), 5vw, var(--space-xl));
+    --card-pad: clamp(var(--space-s), 3vw, var(--space-l));
+    --card-radius: 1rem;
+    --pill-radius: 2rem;
+    --tap-target: 2.75rem;
+
+    /* Type scale */
+    --font-sans: 'Avenir Next', system-ui, sans-serif;
+    --font-mono: ui-monospace, monospace;
+    --text-xs: .75rem;
+    --text-s: .875rem;
+    --text-m: 1rem;
+    --text-l: clamp(1.0625rem, 1rem + .4vw, 1.25rem);
+    --text-xl: clamp(1.125rem, 1rem + .5vw, 1.375rem);
+    --text-2xl: clamp(1.5rem, 1.2rem + 1.25vw, 2rem);
+    --text-3xl: clamp(2.75rem, 1.5rem + 5vw, 5.5rem);
+    --weight-semibold: 650;
+
     background: var(--paper);
     color: var(--ink);
-    font: 1rem/1.5 'Avenir Next', system-ui, sans-serif;
+    font: var(--text-m)/1.5 var(--font-sans);
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  body, p, h1 { margin: 0; }
+  body, p, h1, h2, h3 { margin: 0; }
   body { isolation: isolate; }
   button { font: inherit; }
   a { color: inherit; }
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 5px; }
 
-  .page { max-width: 90rem; margin-inline: auto; padding-inline: clamp(1.25rem, 5vw, 5rem); }
+  h1, h2, h3 { font-family: var(--font-sans); font-weight: var(--weight-semibold); text-wrap: balance; }
+  h1 { font-size: var(--text-3xl); line-height: .98; letter-spacing: -.055em; }
+  h2 { font-size: var(--text-2xl); line-height: 1.1; letter-spacing: -.035em; }
+  h3 { font-size: var(--text-xl); line-height: 1.2; letter-spacing: -.02em; }
+
+  .label {
+    font: var(--weight-semibold) var(--text-xs)/1.4 var(--font-mono);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .page { max-width: var(--page-max); margin-inline: auto; padding-inline: var(--page-gutter); }
+  .page-content { padding-block: var(--page-block); }
+  .card { padding: var(--card-pad); border-radius: var(--card-radius); }
   header {
     container: site-header / inline-size;
     display: flex;
@@ -177,46 +224,35 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     justify-content: space-between;
     flex-wrap: wrap;
     min-height: 3.8rem;
-    gap: .35rem 1rem;
-    padding-block: .55rem;
+    gap: var(--space-3xs) var(--space-s);
+    padding-block: var(--space-2xs);
     border-bottom: 1px solid var(--line);
   }
-  header a { text-decoration: none; font-weight: 650; font-size: .875rem; }
+  header a { text-decoration: none; font-weight: var(--weight-semibold); font-size: var(--text-s); }
   header a:hover { text-decoration: underline; }
   header nav { inline-size: 100%; }
   header nav:has(.menu-toggle:not([hidden])) { inline-size: auto; }
-  .menu-toggle {
-    --compact-menu: 1;
-    min-block-size: 2.75rem;
-    padding-inline: .8rem;
-    border-radius: 2rem;
-    color: var(--ink);
-    font-size: .875rem;
-    font-weight: 650;
-    cursor: pointer;
-  }
-  .menu-toggle:not([hidden]) { display: inline-flex; align-items: center; gap: .4rem; }
-  .menu-toggle svg { flex: none; }
+  .menu-toggle { --compact-menu: 1; }
   .menu-toggle:has(+ .menu-links:popover-open) svg { rotate: 180deg; }
   .menu-links {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: .5rem clamp(.75rem, 3vw, 1.75rem);
+    gap: var(--space-2xs) clamp(var(--space-xs), 3vw, var(--space-l));
   }
   .menu-links[popover]:not(:popover-open) { display: none; }
   .menu-links:popover-open {
     position: absolute;
     inset: auto;
-    top: calc(var(--menu-top) + .5rem);
+    top: calc(var(--menu-top) + var(--space-2xs));
     left: var(--menu-right-edge);
     translate: -100% 0;
     inline-size: min(15rem, calc(100dvi - 2.5rem));
     max-block-size: calc(100dvh - 4.5rem);
     overflow: auto;
     margin: 0;
-    padding: .4rem;
-    border-radius: 1rem;
+    padding: var(--space-2xs);
+    border-radius: var(--card-radius);
     color: var(--ink);
     gap: 0;
   }
@@ -224,23 +260,23 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     display: flex;
     align-items: center;
     inline-size: 100%;
-    min-block-size: 2.75rem;
-    padding-inline: .75rem;
+    min-block-size: var(--tap-target);
+    padding-inline: var(--space-xs);
   }
   header nav a { white-space: nowrap; }
   header [aria-current="page"] { text-decoration: underline; text-underline-offset: .3em; }
-  .github, .motion-toggle:not([hidden]) { display: inline-flex; gap: .45rem; align-items: center; }
+  .github, .motion-toggle:not([hidden]) { display: inline-flex; gap: var(--space-2xs); align-items: center; }
   :is(.github, .motion-toggle) svg { flex: none; }
   .motion-toggle {
     align-self: stretch;
     padding: 0;
-    padding-block-start: .5rem;
+    padding-block-start: var(--space-2xs);
     border: 0;
     border-block-start: 1px solid var(--line);
     background: oklch(none none none / 0);
     color: inherit;
-    font-size: .875rem;
-    font-weight: 650;
+    font-size: var(--text-s);
+    font-weight: var(--weight-semibold);
     white-space: nowrap;
     cursor: pointer;
   }
@@ -258,27 +294,27 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     .menu-links:not([popover]) { flex-flow: row wrap; align-items: center; justify-content: flex-end; }
     .menu-links:not([popover]) .motion-toggle {
       padding-block-start: 0;
-      padding-inline-start: .75rem;
+      padding-inline-start: var(--space-xs);
       border-block-start: 0;
       border-inline-start: 1px solid var(--line);
     }
   }
-  .brand { display: flex; gap: .35rem; align-items: center; }
+  .brand { display: flex; gap: var(--space-3xs); align-items: center; }
   .menu-lamp {
     --lamp-globe-unit: .25rem;
     display: grid;
     place-items: center;
     padding: 0 .65rem;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: var(--tap-target);
+    height: var(--tap-target);
     border: 0;
     border-radius: 50%;
-    background: transparent;
-    -webkit-tap-highlight-color: transparent;
+    background: oklch(none none none / 0);
+    -webkit-tap-highlight-color: oklch(none none none / 0);
   }
   .menu-lamp:enabled { cursor: pointer; }
 
-  .glass-panel, .glass-control {
+  .glass-panel, .glass-control, .pill {
     border: 1px solid var(--glass-edge);
     background-image: var(--glass-tint, none), linear-gradient(155deg in oklch, var(--glass-glint), oklch(none none none / 0) 58%);
     box-shadow: inset 0 1px 0 var(--glass-glint), var(--glass-shadow);
@@ -297,24 +333,34 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     );
   }
 
-  .glass-control {
+  .glass-control, .pill {
     --glass-glint: var(--glass-control-glint);
     background-color: var(--glass-control);
     backdrop-filter: blur(12px) saturate(1.25);
   }
 
-  .glass-control:hover:not(:disabled) { background-color: var(--glass-control-hover); }
+  :is(.glass-control, .pill):hover:not(:disabled) { background-color: var(--glass-control-hover); }
 
-  .primary-link {
+  /* Shared by pill-shaped buttons and links. */
+  .pill {
     display: inline-flex;
+    flex: none;
     align-items: center;
-    gap: 1.1rem;
-    padding: .7rem .95rem;
-    border-radius: 2rem;
+    justify-content: center;
+    gap: var(--space-2xs);
+    min-block-size: var(--tap-target);
+    padding-inline: var(--space-s);
+    border-radius: var(--pill-radius);
+    color: var(--ink);
+    font-size: var(--text-s);
+    font-weight: var(--weight-semibold);
+    line-height: 1.2;
     text-decoration: none;
-    font-weight: 600;
-    letter-spacing: .025em;
+    white-space: nowrap;
+    cursor: pointer;
   }
+  .pill[hidden] { display: none; }
+  .pill svg { flex: none; }
 
   :root[data-lamp="off"] {
     color-scheme: dark;
@@ -333,6 +379,7 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     --glass-control-hover: oklch(51.95% 0.0801 253.6 / 0.502);
     --glass-control-glint: oklch(88.29% 0.0606 247 / 0.11);
     --glass-edge: oklch(80.43% 0.0771 251.7 / 0.467);
+    --backdrop: oklch(14% 0.03 258 / 0.96);
     --glass-shadow: 0 14px 38px -20px oklch(0% 0 0 / 0.8), 0 3px 12px oklch(14.45% 0.024 260.2 / 0.341);
   }
 
