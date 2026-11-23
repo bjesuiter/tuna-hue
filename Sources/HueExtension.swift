@@ -74,20 +74,27 @@ private enum HuePairing {
         !connected.contains($0.id.lowercased())
       }
       try Task.checkCancellation()
-      let bridge = await prompt.choose(from: bridges)
+      let choice = await prompt.choose(from: bridges)
       try Task.checkCancellation()
-      guard let bridge else {
-        return nil
-      }
+      guard let (bridge, name) = choice else { return nil }
       let id = bridge.id.lowercased()
       try HueConnections.requireNew(id)
       let address = bridge.internalipaddress
-      prompt.message.stringValue = "Press the physical link button on your Hue Bridge."
       let client = try HueBridge(address: address, id: id, caPEM: hueRootCertificates)
-      let key = try await client.pair()
-      try Task.checkCancellation()
-      prompt.message.stringValue = "Verifying the bridge connection…"
-      return try await HueConnections.add(address: address, id: id, key: key, path: "")
+      prompt.showPairing(for: name)
+      while true {
+        try Task.checkCancellation()
+        let key: String
+        do {
+          key = try await client.pair()
+        } catch HueError.pairingTimedOut {
+          guard await prompt.waitForRetry() else { return nil }
+          continue
+        }
+        try Task.checkCancellation()
+        prompt.showVerification()
+        return try await HueConnections.add(address: address, id: id, key: key, path: "")
+      }
     }
     prompt.cancelPairing = { pairing.cancel() }
     do {
@@ -104,7 +111,7 @@ private enum HuePairing {
       alert.informativeText = error.localizedDescription
       alert.addButton(withTitle: "Refresh")
       alert.addButton(withTitle: "Cancel")
-      alert.addButton(withTitle: "Connect manually")
+      alert.addButton(withTitle: "Enter IP Address…")
       switch alert.runModal() {
       case .alertFirstButtonReturn: return .refresh
       case .alertThirdButtonReturn: return .switchMode
@@ -172,18 +179,28 @@ private enum HuePairing {
 @MainActor
 private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableViewDelegate {
   private let alert = NSAlert()
+  private let accessory = NSView()
   private let table = NSTableView()
-  private let connect = NSButton()
+  private let spinner = NSProgressIndicator()
+  private let status = NSTextField(labelWithString: "")
+  private let message = NSTextField(wrappingLabelWithString: "Looking for Hue bridges…")
+  private lazy var primary = alert.addButton(withTitle: "Continue")
+  private lazy var manualButton = NSButton(
+    title: "Enter IP Address…", target: self, action: #selector(manualPressed)
+  )
   private var bridges: [DiscoveredHueBridge] = []
   private var names: [Int: String] = [:]
-  private var selection: CheckedContinuation<DiscoveredHueBridge?, Never>?
-  let message = NSTextField(wrappingLabelWithString: "Looking for Hue bridges…")
+  private var selection: CheckedContinuation<(DiscoveredHueBridge, String)?, Never>?
+  private var retry: CheckedContinuation<Bool, Never>?
   private(set) var manual = false
   private(set) var refreshRequested = false
   var cancelPairing: (() -> Void)?
 
   func show() {
     alert.messageText = "Add Hue Bridge"
+    primary.target = self
+    primary.action = #selector(connectPressed)
+    primary.isEnabled = false
     let cancel = alert.addButton(withTitle: "Cancel")
     cancel.target = self
     cancel.action = #selector(cancelPressed)
@@ -203,38 +220,44 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
     table.dataSource = self
     table.delegate = self
 
-    connect.title = "Continue"
-    connect.bezelStyle = .rounded
-    connect.target = self
-    connect.action = #selector(connectPressed)
-    connect.isEnabled = false
     let refresh = NSButton(title: "Refresh", target: self, action: #selector(refreshPressed))
     refresh.bezelStyle = .rounded
-    let link = NSButton(title: "Connect manually", target: self, action: #selector(manualPressed))
-    link.isBordered = false
-    link.contentTintColor = .linkColor
-    let controls = NSStackView(views: [connect, refresh])
-    let content = NSStackView(views: [message, scroll, controls, link])
+    manualButton.isBordered = false
+    manualButton.contentTintColor = .linkColor
+    let controls = NSStackView(views: [manualButton, NSView(), refresh])
+    let content = NSStackView(views: [message, scroll, controls])
     content.orientation = .vertical
     content.alignment = .leading
     NSLayoutConstraint.activate([
       message.widthAnchor.constraint(equalToConstant: 420),
       scroll.widthAnchor.constraint(equalTo: message.widthAnchor),
       scroll.heightAnchor.constraint(equalToConstant: 124),
+      controls.widthAnchor.constraint(equalTo: message.widthAnchor),
     ])
-    content.setFrameSize(content.fittingSize)
-    alert.accessoryView = content
+    accessory.setFrameSize(content.fittingSize)
+    replaceAccessoryContent(with: content)
+    alert.accessoryView = accessory
     alert.layout()
     NSApp.activate()
     alert.window.makeKeyAndOrderFront(nil)
   }
 
-  func choose(from bridges: [DiscoveredHueBridge]) async -> DiscoveredHueBridge? {
+  func choose(from bridges: [DiscoveredHueBridge]) async -> (DiscoveredHueBridge, String)? {
     self.bridges = bridges
     table.reloadData()
     message.stringValue = bridges.isEmpty
       ? "No new Hue bridges found. Check that this Mac and the bridge are on the same network."
       : "Select a Hue bridge to connect."
+    if bridges.isEmpty {
+      primary.title = manualButton.title
+      primary.action = #selector(manualPressed)
+      primary.isEnabled = true
+      manualButton.isHidden = true
+      if let content = accessory.subviews.first {
+        accessory.setFrameSize(content.fittingSize)
+      }
+      alert.layout()
+    }
     let lookup = Task {
       await withTaskGroup(of: (Int, String).self) { group in
         for (index, bridge) in bridges.enumerated() {
@@ -258,38 +281,112 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
     }
   }
 
+  func showPairing(for name: String) {
+    alert.messageText = "Press the button on your Hue Bridge"
+    let instruction = NSTextField(wrappingLabelWithString: "Press the physical link button on “\(name)”.")
+    instruction.alignment = .center
+    instruction.widthAnchor.constraint(equalToConstant: 420).isActive = true
+    spinner.style = .spinning
+    spinner.controlSize = .small
+    spinner.isDisplayedWhenStopped = false
+    let progress = NSStackView(views: [spinner, status])
+    progress.alignment = .centerY
+    let content = NSStackView(views: [instruction, progress])
+    content.orientation = .vertical
+    content.alignment = .centerX
+    content.spacing = 18
+    content.edgeInsets = NSEdgeInsets(top: 4, left: 0, bottom: 16, right: 0)
+    showWaiting()
+    replaceAccessoryContent(with: content)
+    alert.layout()
+  }
+
+  private func replaceAccessoryContent(with content: NSView) {
+    // Keep the same accessory attached to the visible alert while changing steps.
+    accessory.subviews.forEach { $0.removeFromSuperview() }
+    content.translatesAutoresizingMaskIntoConstraints = false
+    accessory.addSubview(content)
+    NSLayoutConstraint.activate([
+      content.centerXAnchor.constraint(equalTo: accessory.centerXAnchor),
+      content.centerYAnchor.constraint(equalTo: accessory.centerYAnchor),
+    ])
+  }
+
+  private func showWaiting() {
+    primary.isHidden = true
+    primary.isEnabled = false
+    status.stringValue = "Waiting for button press…"
+    spinner.isHidden = false
+    spinner.startAnimation(nil)
+  }
+
+  func showVerification() {
+    status.stringValue = "Verifying the bridge connection…"
+  }
+
+  func waitForRetry() async -> Bool {
+    guard !Task.isCancelled else { return false }
+    spinner.stopAnimation(nil)
+    spinner.isHidden = true
+    status.stringValue = HueError.pairingTimedOut.localizedDescription
+    primary.title = "Try Again"
+    primary.action = #selector(retryPressed)
+    primary.isHidden = false
+    primary.isEnabled = true
+    alert.layout()
+    return await withCheckedContinuation { retry = $0 }
+  }
+
+  @objc private func retryPressed() {
+    guard let retry else { return }
+    self.retry = nil
+    showWaiting()
+    alert.layout()
+    retry.resume(returning: true)
+  }
+
   func numberOfRows(in tableView: NSTableView) -> Int { bridges.count }
 
   func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
     let bridge = bridges[row]
-    let name = names[row] ?? "Hue Bridge \(bridge.id.uppercased())"
-    let label = NSTextField(labelWithString: "\(name) · \(bridge.internalipaddress)")
+    let label = NSTextField(labelWithString: "\(name(for: row)) · \(bridge.internalipaddress)")
     label.lineBreakMode = .byTruncatingMiddle
     return label
   }
 
   func tableViewSelectionDidChange(_ notification: Notification) {
-    connect.isEnabled = selection != nil && bridges.indices.contains(table.selectedRow)
+    guard selection != nil else { return }
+    primary.isEnabled = bridges.indices.contains(table.selectedRow)
   }
 
   func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
     selection != nil
   }
 
-  func close() { alert.window.orderOut(nil) }
+  func close() {
+    spinner.stopAnimation(nil)
+    alert.window.orderOut(nil)
+  }
 
   @objc private func cancelPressed() {
     close()
     cancelPairing?()
     selection?.resume(returning: nil)
     selection = nil
+    retry?.resume(returning: false)
+    retry = nil
   }
 
   @objc private func connectPressed() {
-    guard let selection, bridges.indices.contains(table.selectedRow) else { return }
+    let row = table.selectedRow
+    guard let selection, bridges.indices.contains(row) else { return }
     self.selection = nil
-    connect.isEnabled = false
-    selection.resume(returning: bridges[table.selectedRow])
+    primary.isEnabled = false
+    selection.resume(returning: (bridges[row], name(for: row)))
+  }
+
+  private func name(for row: Int) -> String {
+    names[row] ?? "Hue Bridge \(bridges[row].id.uppercased())"
   }
 
   @objc private func manualPressed() {

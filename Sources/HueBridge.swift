@@ -21,6 +21,7 @@ enum HueError: LocalizedError {
   case response
   case rejected
   case disconnected
+  case pairingTimedOut
 
   var errorDescription: String? {
     switch self {
@@ -30,6 +31,7 @@ enum HueError: LocalizedError {
     case .response: return "The Hue bridge returned an unexpected response."
     case .rejected: return "The Hue bridge reported an error for this request."
     case .disconnected: return "This Hue bridge is disconnected. Rescan Hue Groups and choose a connected group."
+    case .pairingTimedOut: return "The bridge didn’t detect a button press in time."
     }
   }
 }
@@ -97,7 +99,7 @@ struct HueBridge: Sendable {
       guard replies.first?.error?.type == 101 else { throw HueError.rejected }
       try await Task.sleep(for: .seconds(1))
     }
-    throw HueError.configuration("Pairing timed out. Run Add Hue Bridge to try again.")
+    throw HueError.pairingTimedOut
   }
 
   func setPower(_ on: Bool, lightID: UUID) async throws {

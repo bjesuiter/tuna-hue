@@ -27,7 +27,7 @@ Use **Add Hue Bridge** to connect another bridge. Searching for **Connect Hue Br
 
 ### Connect manually
 
-Select **Connect manually** in the pairing prompt to enter the bridge details yourself.
+Select **Enter IP Address…** in the bridge picker to enter the bridge details yourself.
 
 1. Find the bridge’s local IPv4 address and its full 16-character hexadecimal bridge ID. The Hue app shows bridge details, and the [Hue discovery service](https://discovery.meethue.com) can return the ID and local IP for bridges on your network.
 2. Leave the certificate path blank to use the bundled Hue roots. To use a specific root CA PEM file, enter its absolute path. [Philips Hue HTTPS guidance](https://developers.meethue.com/develop/application-design-guidance/using-https/)
