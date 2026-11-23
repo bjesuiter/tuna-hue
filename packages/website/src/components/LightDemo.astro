@@ -1,15 +1,15 @@
 <div class="demo" data-light-demo data-lit="true">
-  <div class="stage" aria-hidden="true">
-    <div class="wash"></div>
-    <div class="water"></div>
-    <canvas></canvas>
-    <div class="fixture">
-      <span class="shade"></span>
-    </div>
+  <div class="stage">
+    <div class="wash" aria-hidden="true"></div>
+    <div class="water" aria-hidden="true"></div>
+    <canvas aria-hidden="true"></canvas>
+    <button class="fixture" type="button" aria-label="Turn Off Living Room lights" disabled>
+      <span class="shade" aria-hidden="true"></span>
+    </button>
   </div>
-  <div class="console glass-panel">
+  <div class="demo-controls">
     <p class="caption">Interactive demo</p>
-    <button class="glass-control" type="button" disabled>
+    <button class="console glass-control" type="button" disabled>
       <span class="room"><strong>Living Room</strong><small>Hue Room</small></span>
       <span class="action"><span data-action>Turn Off</span> <span aria-hidden="true">↵</span></span>
     </button>
@@ -61,6 +61,10 @@
     justify-items: center;
     width: 46%;
     max-width: 17rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
     z-index: 1;
   }
   .wash {
@@ -91,32 +95,32 @@
   [data-lit="false"] .shade { box-shadow: none; }
   [data-lit="false"] .shade::after { opacity: 1; }
 
-  .console {
-    width: min(100%, 23rem);
-    padding: .72rem;
-    border-radius: .9rem;
-  }
+  .demo-controls { width: min(100%, 23rem); }
   .caption {
-    padding: .1rem .3rem .5rem;
+    margin: 0 .3rem .5rem;
     color: var(--muted-ink);
     font: 650 .65rem/1.4 ui-monospace, monospace;
     text-transform: uppercase;
     letter-spacing: .06em;
     text-align: start;
   }
-  button {
+  .console {
     display: flex;
     width: 100%;
     align-items: center;
     justify-content: space-between;
     text-align: start;
     gap: .5rem;
-    border-radius: .5rem;
-    padding: .65rem .75rem;
+    border-radius: .9rem;
+    padding: .95rem 1rem;
     color: var(--ink);
-    cursor: pointer;
   }
-  button:disabled { cursor: default; }
+  button:enabled { cursor: pointer; }
+  @media (hover: hover) {
+    .fixture:enabled:hover .shade { filter: brightness(1.025); }
+    [data-lit="false"] .fixture:enabled:hover .shade { filter: brightness(1.08); }
+  }
+  button:enabled:active { filter: brightness(.93); }
   .room { display: grid; line-height: 1.25; }
   .room small { color: var(--muted-ink); }
   .action { font-size: .85rem; font-weight: 700; white-space: nowrap; }
@@ -134,7 +138,8 @@
 
   for (const demo of document.querySelectorAll<HTMLElement>('[data-light-demo]')) {
     const canvas = demo.querySelector('canvas')!;
-    const button = demo.querySelector('button')!;
+    const globe = demo.querySelector<HTMLButtonElement>('.fixture')!;
+    const consoleButton = demo.querySelector<HTMLButtonElement>('.console')!;
     const action = demo.querySelector('[data-action]')!;
     const status = demo.querySelector('[role="status"]')!;
     const motion = matchMedia('(prefers-reduced-motion: no-preference)');
@@ -188,14 +193,19 @@
       });
     }
 
-    button.disabled = false;
-    button.addEventListener('click', () => {
+    function toggleLights() {
       lit = !lit;
       demo.dataset.lit = String(lit);
       action.textContent = lit ? 'Turn Off' : 'Turn On';
+      globe.setAttribute('aria-label', `${action.textContent} Living Room lights`);
       status.textContent = lit ? 'Living Room lights are on.' : 'Living Room lights are off.';
 
       updateScene();
-    });
+    }
+
+    for (const button of [globe, consoleButton]) {
+      button.disabled = false;
+      button.addEventListener('click', toggleLights);
+    }
   }
 </script>

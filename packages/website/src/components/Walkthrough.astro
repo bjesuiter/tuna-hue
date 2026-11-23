@@ -10,10 +10,13 @@ import manual from '../assets/screenshots/manual-connection.png';
 import checkConnection from '../assets/screenshots/check-connection.png';
 import manageBridges from '../assets/screenshots/manage-bridges.png';
 import disconnect from '../assets/screenshots/disconnect-bridge.png';
+
+const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
 ---
 
 <section class="journey" aria-labelledby="walkthrough">
   <h1 id="walkthrough">From bridge to light switch.</h1>
+  <p>See how Tuna Hue Control pairs with your Hue Bridge and lets you switch rooms and zones from Tuna.</p>
 
   <ol class="steps" role="list">
     <li class="glass-panel glass-rainbow">
@@ -53,6 +56,8 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
       ]} />
     </li>
   </ol>
+
+  <a class="primary-link glass-control" href={installHref}>Install now <span aria-hidden="true">→</span></a>
 
   <section class="help" aria-labelledby="help-title">
     <h2 id="help-title">Bridge setup and troubleshooting</h2>

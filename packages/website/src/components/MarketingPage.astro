@@ -14,8 +14,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <p class="eyebrow">A Tuna extension for Philips Hue</p>
       <h1 id="headline">Lights at your fingertips.</h1>
       <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
-      <a class="install glass-control" href={base + '/install/'}>Get started <span aria-hidden="true">→</span></a>
-      <a class="walkthrough-link" href={base + '/how-it-works/'}>See how it works <span aria-hidden="true">→</span></a>
+      <div class="hero-actions">
+        <a class="primary-link glass-control" href={base + '/how-it-works/'}>See how it works <span aria-hidden="true">→</span></a>
+        <a class="install-link" href={base + '/install/'}>Install now</a>
+      </div>
     </div>
     <LightDemo />
   </section>
@@ -48,16 +50,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     text-wrap: balance;
   }
   .summary { max-width: 29ch; color: var(--muted-ink); font-size: clamp(1.05rem, 1.5vw, 1.25rem); }
-  .install {
-    display: inline-flex;
-    gap: 1.1rem;
-    margin-top: 1.65rem;
-    padding: .7rem .95rem;
-    border-radius: 2rem;
-    text-decoration: none;
-    font-weight: 750;
-  }
-  .walkthrough-link { display: inline-block; margin: 1rem 0 0 .95rem; font-size: .9rem; font-weight: 650; text-underline-offset: .2em; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin-block-start: 1.65rem; }
+  .install-link { font-size: .9rem; font-weight: 650; text-underline-offset: .2em; }
   .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
   .requirements-bar {
     border-radius: 1rem;

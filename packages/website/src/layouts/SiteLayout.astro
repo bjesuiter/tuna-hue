@@ -12,8 +12,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const currentPath = Astro.url.pathname.replace(/\/$/, '');
 const mainLinks = [
-  { path: base + '/install', label: 'Get started' },
   { path: base + '/how-it-works', label: 'See how it works' },
+  { path: base + '/install', label: 'Install now' },
 ];
 const repository = 'https://github.com/bjesuiter/tuna-hue';
 ---
@@ -72,8 +72,9 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     --accent: #eff5ff;
     --focus: #6646d3;
     --glass-panel: #fbfdffdf;
-    --glass-control: #eef5ff94;
-    --glass-control-hover: #e2edffdc;
+    --glass-control: #eef5ff40;
+    --glass-control-hover: #eef5ff70;
+    --glass-control-glint: #ffffff54;
     --glass-edge: #7287a654;
     --glass-glint: #ffffffbb;
     --glass-shadow: 0 16px 38px -26px #465d8c73, 0 3px 12px #6d83ae24;
@@ -136,11 +137,23 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
   }
 
   .glass-control {
+    --glass-glint: var(--glass-control-glint);
     background-color: var(--glass-control);
     backdrop-filter: blur(12px) saturate(1.25);
   }
 
   .glass-control:hover:not(:disabled) { background-color: var(--glass-control-hover); }
+
+  .primary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: .7rem .95rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: .025em;
+  }
 
   :root:has([data-light-demo][data-lit="false"]) {
     color-scheme: dark;
@@ -155,8 +168,9 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
     --focus: #b4d7ff;
     --mark-light: radial-gradient(circle at 32% 30%, #e5f0ff, #7796bb 72%);
     --glass-panel: #15263ae8;
-    --glass-control: #35597f8c;
-    --glass-control-hover: #476b96c9;
+    --glass-control: #35597f50;
+    --glass-control-hover: #476b9680;
+    --glass-control-glint: #b9ddff1c;
     --glass-edge: #9bc3f077;
     --glass-glint: #b9ddff29;
     --instruction-glow: none;

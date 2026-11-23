@@ -1,6 +1,4 @@
 ---
-const walkthroughHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/how-it-works/';
-
 const fetchSource = `git clone https://github.com/bjesuiter/tuna-hue.git
 cd tuna-hue`;
 
@@ -56,10 +54,10 @@ ditto \\
       <h2>Restart Tuna and connect your bridge</h2>
       <p>Quit and reopen Tuna so it loads the framework. If Tuna asks you to trust the extension, confirm only if you trust the source you built. Open <strong>Settings → Sources</strong> and check that <strong>Hue Groups</strong> appears.</p>
       <p>Search for <strong>Hue</strong> and run <strong>Connect First Hue Bridge</strong>. If the command is missing, set <strong>Hue Groups → In global search</strong> to <strong>All</strong>.</p>
+      <p>Allow local network access if macOS asks. Select your bridge, choose <strong>Continue</strong>, and press the physical link button when prompted. Once Tuna confirms the connection, search for a room or zone to control its lights.</p>
     </li>
   </ol>
 
-  <a class="next glass-control" href={walkthroughHref}>Continue to the bridge walkthrough <span aria-hidden="true">→</span></a>
 </article>
 
 <style>
@@ -109,13 +107,4 @@ ditto \\
     font: .825rem/1.65 ui-monospace, monospace;
   }
   code { font: inherit; }
-  .next {
-    display: inline-flex;
-    gap: .7rem;
-    align-items: center;
-    padding: .65rem 1rem;
-    border-radius: 2rem;
-    text-decoration: none;
-    font-weight: 650;
-  }
 </style>
