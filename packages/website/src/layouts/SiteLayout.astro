@@ -56,7 +56,11 @@ const repository = 'https://github.com/bjesuiter/tuna-hue';
 
 <style is:global>
   @media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+
     :root { scroll-behavior: smooth; }
+
+    ::view-transition-group(root) { animation-duration: 260ms; }
   }
 
   :root {
