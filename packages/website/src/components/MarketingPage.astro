@@ -11,12 +11,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 >
   <section class="hero" aria-labelledby="headline">
     <div class="intro">
-      <p class="eyebrow">A Tuna extension for Philips Hue</p>
-      <h1 id="headline">Lights at your fingertips.</h1>
-      <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
+      <div class="hero-copy">
+        <p class="eyebrow">A Tuna extension for Philips Hue</p>
+        <h1 id="headline">Lights at your fingertips.</h1>
+        <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
+      </div>
       <div class="hero-actions">
-        <a class="primary-link glass-control" href={base + '/how-it-works/'} data-lamp-link>See how it works <span aria-hidden="true">→</span></a>
-        <a class="install-link" href={base + '/install/'} data-lamp-link>Install now</a>
+        <a class="primary-link install-link" href={base + '/install/'} data-lamp-link>Install Tuna Hue</a>
+        <a class="walkthrough-link" href={base + '/how-it-works/'} data-lamp-link>See how it works <span aria-hidden="true">→</span></a>
       </div>
     </div>
     <LightDemo />
@@ -41,7 +43,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     padding-block: clamp(3rem, 7vw, 7rem);
   }
   .eyebrow, .requirements-links { font: 600 .72rem/1.5 ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; }
-  .intro { container-type: inline-size; }
+  .hero-copy { container-type: inline-size; }
   .hero h1 {
     max-width: 12ch;
     margin-block: .9rem 1.2rem;
@@ -51,7 +53,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   .summary { max-width: 29ch; color: var(--muted-ink); font-size: clamp(1.05rem, 1.5vw, 1.25rem); }
   .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin-block-start: 1.65rem; }
-  .install-link { font-size: .9rem; font-weight: 650; text-underline-offset: .2em; }
+  .install-link { background: var(--ink); color: var(--paper); font-weight: 700; }
+  .walkthrough-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    min-block-size: 2.75rem;
+    font-size: .9rem;
+    font-weight: 600;
+    text-underline-offset: .23em;
+    text-decoration-color: var(--muted-ink);
+  }
+  @media (hover: hover) {
+    .install-link:hover { background: color-mix(in oklch, var(--ink) 88%, var(--paper)); }
+  }
   .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
   .requirements-bar {
     border-radius: 1rem;
@@ -71,6 +86,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   @media (min-width: 48rem) {
     .hero { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(1.5rem, 4vw, 4.5rem); }
     .hero h1 { font-size: clamp(2.6rem, 17cqi, 7rem); }
+  }
+
+  @supports (grid-template-rows: subgrid) {
+    @media (min-width: 48rem) {
+      .hero { row-gap: .5rem; }
+      .intro, .hero > :global(.demo) {
+        grid-row: span 3;
+        display: grid;
+        grid-template-rows: subgrid;
+        align-self: stretch;
+      }
+      .hero-copy { align-self: center; }
+      .hero-actions {
+        grid-row: 3;
+        align-self: center;
+        margin-block-start: 0;
+      }
+    }
   }
 
   @media (min-width: 48rem) and (min-height: 30rem) {
