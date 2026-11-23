@@ -51,7 +51,8 @@ repository root. Open `http://localhost:4321/tuna-hue/`. Run
 which writes to `packages/website/dist`. Run `bun run preview` to serve that build
 locally. The Astro config uses the repository GitHub Pages path.
 
-The link preview image `packages/website/public/og.png` is rendered from
-`packages/website/og-image/og.html`. After editing it, run
-`bun run --filter @tuna-hue/website og-image` (needs the `agent-browser` CLI) and
-commit the new PNG.
+The build renders the link preview image `og.png` from
+`packages/website/og-image/og.html` with [Takumi](https://takumi.kane.tw)
+(`src/pages/og.png.ts`). Open `og.html` in a browser to edit the design, and check
+the result at `http://localhost:4321/tuna-hue/og.png`. Takumi supports a subset of
+browser CSS and only the fonts the route passes to it (Geist and Geist Mono).

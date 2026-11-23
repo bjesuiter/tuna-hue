@@ -7,7 +7,7 @@ h1 { font-size: 92px; margin-top: auto; }
 .copy .label { color: var(--muted-ink); margin: 28px 0 0; font-size: 23px; white-space: nowrap; }
 
 /* Tuna launcher, proportions taken from the 2x screenshots */
-.tuna { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; color: oklch(0% 0 0); display: grid; justify-items: center; gap: 14px; }
+.tuna { color: oklch(0% 0 0); display: grid; justify-items: center; gap: 14px; }
 .win { width: 580px; padding: 17px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
   border-radius: 46px; background: linear-gradient(170deg in oklch, oklch(91.5% 0.006 265), oklch(87.5% 0.008 265));
   border: 1.5px solid oklch(100% 0 0 / .55);
@@ -27,6 +27,7 @@ h1 { font-size: 92px; margin-top: auto; }
 .rhead { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 10px 18px; border-bottom: 1.5px solid oklch(87% 0.006 270); }
 .rhead b { font-size: 20px; font-weight: 600; }
 .chips { display: flex; gap: 6px; }
+.keys { display: flex; align-items: center; gap: 1px; }
 .chip { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 11px; border-radius: 14px; border: 1.5px solid oklch(85% 0.006 270); background: oklch(97.5% 0.003 270); font-size: 17px; font-weight: 600; color: oklch(22% 0 0); }
 .row { display: flex; align-items: center; gap: 14px; padding: 12px 18px; }
 .row + .row { padding-top: 2px; }
@@ -75,8 +76,8 @@ h1 { font-size: 92px; margin-top: auto; }
     <div class="results">
       <div class="rhead"><b>24 results</b>
         <div class="chips">
-          <span class="chip"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M8 0l1.3 4.2L13.5 5.5 9.3 6.8 8 11 6.7 6.8 2.5 5.5l4.2-1.3z"/><path d="M2.5 9.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/></svg>⌃S</span>
-          <span class="chip"><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 1.5h7v3a3.5 3.5 0 0 1-7 0z" fill="currentColor"/><path d="M6 8v3.5M3.5 12.5h5M17 1.5v11M14 9.5l3 3 3-3"/></svg>⌃O</span>
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M8 0l1.3 4.2L13.5 5.5 9.3 6.8 8 11 6.7 6.8 2.5 5.5l4.2-1.3z"/><path d="M2.5 9.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/></svg><span class="keys"><svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 6.5 3.5l4 4"/></svg>S</span></span>
+          <span class="chip"><svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 1.5h7v3a3.5 3.5 0 0 1-7 0z" fill="currentColor"/><path d="M6 8v3.5M3.5 12.5h5M17 1.5v11M14 9.5l3 3 3-3"/></svg><span class="keys"><svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 6.5 3.5l4 4"/></svg>O</span></span>
         </div>
       </div>
       <div class="row">
