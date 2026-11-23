@@ -321,12 +321,15 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
 
   func showPairing(for name: String) {
     alert.messageText = "Press the link button"
+    let width: CGFloat = 320
     let illustration = NSHostingView(rootView: HueLinkButtonIllustration())
     let instruction = NSTextField(
       wrappingLabelWithString: "Press the physical link button on “\(name)”."
     )
     instruction.alignment = .center
+    instruction.preferredMaxLayoutWidth = width
     status.alignment = .center
+    status.preferredMaxLayoutWidth = width
     status.textColor = .secondaryLabelColor
     let content = NSStackView(views: [illustration, instruction, status])
     content.orientation = .vertical
@@ -334,7 +337,7 @@ private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableVi
     content.spacing = 10
     content.edgeInsets = NSEdgeInsets(top: 4, left: 0, bottom: 8, right: 0)
     NSLayoutConstraint.activate([
-      illustration.widthAnchor.constraint(equalToConstant: 320),
+      illustration.widthAnchor.constraint(equalToConstant: width),
       illustration.heightAnchor.constraint(equalToConstant: 104),
       instruction.widthAnchor.constraint(equalTo: illustration.widthAnchor),
       status.widthAnchor.constraint(equalTo: illustration.widthAnchor),
@@ -522,10 +525,14 @@ private struct HueAmbientWash: View {
   }
 
   private func glow(_ tint: Color, opacity: Double) -> some View {
-    Ellipse()
-      .fill(.radialGradient(colors: [tint.opacity(opacity), tint.opacity(0)], center: .center,
-                            startRadius: 12, endRadius: 111))
-      .frame(width: 222, height: 160)
+    Circle()
+      .fill(.radialGradient(
+        colors: [tint.opacity(opacity), tint.opacity(0)],
+        center: .center,
+        startRadius: 12,
+        endRadius: 111
+      ))
+      .frame(width: 222, height: 222)
   }
 }
 
