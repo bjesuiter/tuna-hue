@@ -12,6 +12,8 @@ struct HueGroup: Sendable {
   let name: String
   let kind: HueGroupKind
   let lightID: UUID
+  var isOn: Bool?
+  let isOffline: Bool?
 }
 
 enum HueError: LocalizedError {
@@ -69,9 +71,19 @@ struct HueBridge: Sendable {
   }
 
   func groups() async throws -> [HueGroup] {
-    async let rooms = groups(of: .room)
-    async let zones = groups(of: .zone)
-    return try await rooms + zones
+    async let rooms: [GroupResource] = request(HueGroupKind.room.rawValue)
+    async let zones: [GroupResource] = request(HueGroupKind.zone.rawValue)
+    async let groupedLights: [GroupedLight]? = try? request("grouped_light")
+    async let lights: [LightResource]? = try? request("light")
+    async let connectivity: [ZigbeeConnectivity]? = try? request("zigbee_connectivity")
+    let (roomResources, zoneResources) = try await (rooms, zones)
+    var power: [UUID: Bool] = [:]
+    for light in await groupedLights ?? [] {
+      power[light.id] = light.on?.on
+    }
+    let reachability = await LightReachability(lights: lights ?? [], connectivity: connectivity ?? [])
+    return groups(from: roomResources, kind: .room, power: power, reachability: reachability)
+      + groups(from: zoneResources, kind: .zone, power: power, reachability: reachability)
   }
 
   func name() async throws -> String? {
@@ -112,13 +124,18 @@ struct HueBridge: Sendable {
     }
   }
 
-  private func groups(of kind: HueGroupKind) async throws -> [HueGroup] {
-    let resources: [GroupResource] = try await request(kind.rawValue)
-    return resources.compactMap { resource in
+  private func groups(
+    from resources: [GroupResource], kind: HueGroupKind, power: [UUID: Bool],
+    reachability: LightReachability
+  ) -> [HueGroup] {
+    resources.compactMap { resource in
       guard let service = resource.services.first(where: { $0.rtype == "grouped_light" }) else {
         return nil
       }
-      return HueGroup(id: resource.id, name: resource.metadata.name, kind: kind, lightID: service.rid)
+      return HueGroup(
+        id: resource.id, name: resource.metadata.name, kind: kind, lightID: service.rid,
+        isOn: power[service.rid], isOffline: reachability.isOffline(resource.children ?? [])
+      )
     }
   }
 
@@ -190,6 +207,56 @@ private struct GroupResource: Decodable {
   let id: UUID
   let metadata: Metadata
   let services: [Service]
+  let children: [Service]?
+}
+
+private struct LightResource: Decodable {
+  let id: UUID
+  let owner: Service
+}
+
+private struct ZigbeeConnectivity: Decodable {
+  let owner: Service
+  let status: String
+}
+
+private struct LightReachability {
+  private let ownersByLight: [UUID: UUID]
+  private let lightOwners: Set<UUID>
+  private let offlineByDevice: [UUID: Bool]
+
+  init(lights: [LightResource], connectivity: [ZigbeeConnectivity]) {
+    ownersByLight = Dictionary(lights.map { ($0.id, $0.owner.rid) }, uniquingKeysWith: { first, _ in first })
+    lightOwners = Set(ownersByLight.values)
+    var offline: [UUID: Bool] = [:]
+    for link in connectivity {
+      switch link.status {
+      case "disconnected", "connectivity_issue": offline[link.owner.rid] = true
+      case "connected": offline[link.owner.rid] = false
+      default: break
+      }
+    }
+    offlineByDevice = offline
+  }
+
+  func isOffline(_ children: [Service]) -> Bool? {
+    // Rooms reference devices, including accessories. Zones reference lights directly.
+    let lights = children.filter { child in
+      child.rtype == "light" || (child.rtype == "device" && lightOwners.contains(child.rid))
+    }
+    let states = lights.map { light in
+      let owner = light.rtype == "device" ? light.rid : ownersByLight[light.rid]
+      return owner.flatMap { offlineByDevice[$0] }
+    }
+    if states.contains(false) { return false }
+    return !states.isEmpty && states.allSatisfy { $0 == true } ? true : nil
+  }
+}
+
+private struct GroupedLight: Decodable {
+  struct Power: Decodable { let on: Bool? }
+  let id: UUID
+  let on: Power?
 }
 
 private struct Service: Decodable {

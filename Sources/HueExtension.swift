@@ -1,5 +1,6 @@
 import AppKit
 import OSLog
+import os
 import TunaKit
 
 extension TypeID {
@@ -32,7 +33,9 @@ public final class HueExtension: Extension {
       defaultActionRankings: [
         DefaultActionRankingDefinition(
           typeID: .hueGroup,
-          actions: ["on", "off"].map { ActionReference(catalogIdentifier: "hue.actions", actionID: $0) }
+        actions: ["check-connection", "on", "off"].map {
+          ActionReference(catalogIdentifier: "hue.actions", actionID: $0)
+        }
         ),
       ]
     )
@@ -460,7 +463,16 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
         case .success(let groups):
           groupCount += groups.count
           let bridgeLabel = Self.label(for: record, among: current)
-          items += groups.map { HueGroupItem(group: $0, bridge: record, bridgeLabel: bridgeLabel) }
+          items += groups.map { group in
+            HueGroupItem(group: group, bridge: record, bridgeLabel: bridgeLabel) { [weak self] group in
+              guard let self else { return }
+              let current = objects.compactMap { $0 as? HueGroupItem }.first {
+                $0.bridgeID == record.id && $0.group.id == group.id && $0.group.kind == group.kind
+              }
+              current?.updateGroup(group)
+              reportScanFinished()
+            }
+          }
         case .failure(let error):
           failed += 1
           logger.error("Hue scan for \(record.name, privacy: .private) failed: \(error.localizedDescription, privacy: .private)")
@@ -581,22 +593,62 @@ private final class AddHueBridgeItem: CatalogEntity, Runnable, @unchecked Sendab
 }
 
 private final class HueGroupItem: CatalogEntity, @unchecked Sendable {
-  let group: HueGroup
   let bridgeID: String
 
   private let bridgeName: String
   private let bridgeLabel: String
+  private let state: OSAllocatedUnfairLock<HueGroup>
+  private let didCheckConnection: @MainActor (HueGroup) -> Void
 
-  init(group: HueGroup, bridge: HueConnection, bridgeLabel: String) {
-    self.group = group
+  var group: HueGroup { state.withLock { $0 } }
+
+  init(
+    group: HueGroup, bridge: HueConnection, bridgeLabel: String,
+    didCheckConnection: @escaping @MainActor (HueGroup) -> Void
+  ) {
     bridgeID = bridge.id
     bridgeName = bridge.name
     self.bridgeLabel = bridgeLabel
+    self.didCheckConnection = didCheckConnection
+    state = OSAllocatedUnfairLock(initialState: group)
     super.init(id: "\(bridge.id)/\(group.kind.rawValue)/\(group.id)", title: group.name, path: nil)
     typeID = .hueGroup
   }
 
-  override var detail: String? { "\(group.kind.label) · \(bridgeLabel)" }
+  override var detail: String? {
+    let group = group
+    let location = "\(group.kind.label) · \(bridgeLabel)"
+    return group.isOffline == true ? "Offline · \(location)" : location
+  }
+
+  func updatePower(_ on: Bool) {
+    state.withLock { $0.isOn = on }
+  }
+
+  func updateGroup(_ group: HueGroup) {
+    state.withLock { $0 = group }
+  }
+
+  @MainActor
+  func checkConnection() async throws -> ActionResult {
+    let selected = group
+    let groups = try await HueConnections.use(bridgeID) { bridge in
+      try await bridge.groups()
+    }
+    try Task.checkCancellation()
+    guard let latest = groups.first(where: { $0.id == selected.id && $0.kind == selected.kind }) else {
+      return .failure("“\(title)” is no longer available on this bridge.")
+    }
+    guard let isOffline = latest.isOffline else {
+      return .failure("Couldn’t confirm whether the lights in “\(title)” are reachable.")
+    }
+    updateGroup(latest)
+    didCheckConnection(latest)
+    if isOffline {
+      return .failure("All lights in “\(title)” are unreachable. Check that they have power.")
+    }
+    return .subjects([self])
+  }
 
   override var searchKeys: [String] {
     super.searchKeys + ["Hue", "Hue \(group.name)", "\(bridgeName) \(group.name)"]
@@ -616,6 +668,7 @@ public final class HueActions: ActionCatalog {
   public let identifier: String
   public let name: String
   public private(set) lazy var actions: [CatalogAction] = [
+    Self.checkConnectionAction(),
     Self.powerAction(id: "on", title: "Turn On", symbol: "lightbulb.fill", on: true),
     Self.powerAction(id: "off", title: "Turn Off", symbol: "lightbulb.slash", on: false),
   ]
@@ -625,22 +678,49 @@ public final class HueActions: ActionCatalog {
     name = definition.name
   }
 
+  private static func checkConnectionAction() -> CatalogAction {
+    let action = PredicateAwareAction(id: "check-connection", title: "Check Connection") { subject, _ in
+      guard let item = subject as? HueGroupItem else { return .failure("Choose a Hue room or zone.") }
+      do {
+        return try await item.checkConnection()
+      } catch is CancellationError {
+        return .cancelled
+      } catch {
+        return .failure(error.localizedDescription)
+      }
+    }
+    action.supportedSubjectTypes = [.hueGroup]
+    action.subjectPredicate = { ($0 as? HueGroupItem)?.group.isOffline == true }
+    action.systemSymbolName = "arrow.clockwise"
+    action.executionPolicy = .keepVisible
+    return action
+  }
+
   private static func powerAction(id: String, title: String, symbol: String, on: Bool) -> CatalogAction {
     let action = PredicateAwareAction(id: id, title: title) { subject, _ in
       guard let item = subject as? HueGroupItem else {
         return .failure("Choose a Hue room or zone.")
       }
+      let group = item.group
+      guard group.isOffline != true else {
+        return .failure("All lights in this group are offline.")
+      }
       do {
         try await HueConnections.use(item.bridgeID) { bridge in
-          try await bridge.setPower(on, lightID: item.group.lightID)
+          try await bridge.setPower(on, lightID: group.lightID)
         }
+        item.updatePower(on)
         return .success
       } catch {
         return .failure(error.localizedDescription)
       }
     }
     action.supportedSubjectTypes = [.hueGroup]
-    action.subjectPredicate = { $0 is HueGroupItem }
+    action.subjectPredicate = { subject in
+      guard let item = subject as? HueGroupItem else { return false }
+      let group = item.group
+      return group.isOffline != true && group.isOn != on
+    }
     action.systemSymbolName = symbol
     action.executionPolicy = .keepVisible
     return action

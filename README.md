@@ -1,6 +1,6 @@
 # Tuna Hue Control
 
-A native Swift extension for the [Tuna launcher](https://tunaformac.com). It reads rooms and zones from connected Philips Hue bridges over the local CLIP v2 API and offers **Turn On** and **Turn Off** for each group with a `grouped_light` service.
+A native Swift extension for the [Tuna launcher](https://tunaformac.com). It reads rooms and zones from connected Philips Hue bridges over the local CLIP v2 API. A group with a `grouped_light` service offers **Turn On** when it’s off and **Turn Off** when it’s on. Both actions are available when the bridge’s power state is unavailable.
 
 Search for **Benny Wohnzimmer** and choose the **Hue Zone** result to control that zone. If your bridge also has a **Wohnzimmer** room, the **Hue Room** result controls the entire room. Press **Tab** to pick the action. Each result shows the bridge name alongside the group type.
 
