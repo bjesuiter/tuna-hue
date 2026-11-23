@@ -16,8 +16,8 @@ interface Props {
   }[];
 }
 
-// Thumbnails are at most 36rem wide; render the cropped part at about 2x that.
-const thumbPixels = 1152;
+// Thumbnails are at most 30rem wide; render the cropped part at about 2x that.
+const thumbPixels = 960;
 // Bounds include the window's 16px transparent drop shadow. Thumbnails trim it so their
 // edge is the window edge; the preview keeps it.
 const shadow = 16;
@@ -98,7 +98,8 @@ const widest = Math.max(...shots.map(({ width }) => width));
     border-radius: 2.6% / calc(2.6% * var(--aspect));
     cursor: zoom-in;
   }
-  .single .shot { --max-width: 36rem; }
+  /* A lone screenshot stays near the size of one in a two-shot row. */
+  .single .shot { --max-width: 24rem; }
   /* After the base .shot rule: in a row, the column already sets the scale. */
   @container (min-width: 26rem) {
     .shots { grid-template-columns: var(--columns); }

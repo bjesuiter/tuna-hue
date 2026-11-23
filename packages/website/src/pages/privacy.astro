@@ -12,21 +12,19 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 </SiteLayout>
 
 <style>
-  .privacy {
-    display: grid;
-    gap: var(--space-s);
-    max-inline-size: 70ch;
-  }
+  .privacy { max-inline-size: 70ch; }
+  /* Margins, not a grid gap, so the intro paragraph's own spacing under the h1 applies. */
+  .privacy > :global(* + *) { margin-block-start: var(--space-s); }
 
-  .privacy :global(h1) { margin-block-end: var(--space-xs); }
   .privacy :global(ul) {
     display: grid;
     gap: var(--space-xs);
-    margin: 0;
+    margin-block-end: 0;
     padding-inline-start: var(--space-s);
   }
   .privacy :global(code) {
     font-family: var(--font-mono);
+    font-size: .9em;
     overflow-wrap: anywhere;
   }
 </style>

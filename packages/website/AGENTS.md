@@ -8,4 +8,4 @@ Use one framed surface per content group. Keep content inside cards unframed, in
 
 # Website tokens
 
-Take spacing, type sizes, weights, radii and page/card padding from the tokens in `SiteLayout.astro` (`--space-*`, `--text-*`, `--weight-*`, `--page-block`, `--card-pad`). Use the global `h1`–`h3` styles, `.page-content` for a page's top-level wrapper, `.card` for framed surfaces, `.label` for small mono labels, and `.pill` for every pill-shaped button or link.
+Take spacing, type sizes, weights, radii and page/card padding from the tokens in `SiteLayout.astro` (`--space-*`, `--text-*`, `--weight-*`, `--page-block`, `--card-pad`). Use the global `h1`–`h3` styles, `.page-content` for a page's top-level wrapper (a `<p>` right after its `h1` is styled as the page intro), `.card` for framed surfaces, `.label` for small mono labels, and `.pill` for every pill-shaped button or link.
