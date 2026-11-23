@@ -4,6 +4,7 @@
     <span class="glow lilac"></span>
     <span class="glow mint"></span>
     <span class="glow blue"></span>
+    <span class="glow gold"></span>
   </div>
   <button type="button" hidden>Pause ambient motion</button>
 </div>
@@ -34,6 +35,7 @@
   }
   .field::before, .glow { opacity: calc(1 - var(--moonlight, 0)); }
   .glow {
+    --blob-clearance: clamp(24px, 4vw, 84px);
     position: absolute;
     inline-size: max(86vw, 29rem);
     block-size: max(102%, 32rem);
@@ -49,6 +51,7 @@
   .lilac { --light: oklch(75.5% 0.167 303 / 0.753); inset: 6% auto auto 4%; }
   .mint { --light: oklch(82.9% 0.145 171 / 0.69); inset: -12% -27% auto auto; }
   .blue { --light: oklch(80.1% 0.111 254 / 0.769); inset: 42% auto auto 5%; }
+  .gold { --light: oklch(89% 0.116 92 / 0.6); inset: 37% auto auto -29%; }
 
   button {
     position: absolute;
@@ -72,14 +75,21 @@
 <script>
   function driftFrames(): Keyframe[] {
     const turn = 2 * Math.PI;
-    const phases = Array.from({ length: 4 }, () => Math.random() * turn);
+    const [start, bend, stretch, lift] = Array.from({ length: 4 }, () => Math.random() * turn);
+    const steps = 100;
+    // Leave room for the straight segment between sampled keyframes.
+    const clearanceMargin = 1.04;
 
-    // Whole harmonics let an irregular path loop without a jump.
-    return Array.from({ length: 101 }, (_, index) => {
-      const angle = index * turn / 100;
-      const x = 40 * Math.sin(angle + phases[0]) + 14 * Math.sin(3 * angle + phases[1]);
-      const y = 34 * Math.sin(angle + phases[2]) + 12 * Math.sin(2 * angle + phases[3]);
-      return { transform: `translate(${x.toFixed(2)}%, ${y.toFixed(2)}%)` };
+    return Array.from({ length: steps + 1 }, (_, index) => {
+      const phase = (index % steps) * turn / steps;
+      const angle = phase + start + .22 * Math.sin(2 * phase + bend);
+      const x = Math.cos(angle);
+      const y = Math.sin(angle);
+      const width = 30 + 12 * Math.sin(3 * phase + stretch);
+      const height = 24 + 10 * Math.sin(2 * phase + lift);
+      return {
+        transform: `translate(calc(${(x * width).toFixed(2)}% + var(--blob-clearance) * ${(x * clearanceMargin).toFixed(4)}), calc(${(y * height).toFixed(2)}% + var(--blob-clearance) * ${(y * clearanceMargin).toFixed(4)}))`,
+      };
     });
   }
 
@@ -90,27 +100,33 @@
     const motion = matchMedia('(prefers-reduced-motion: no-preference)');
     let animations: Animation[] = [];
     let paused = false;
-    let boost = 0;
     let requestedBoost = 0;
-    let rippleRate = 1;
+    let playbackRate = 1;
     let wheelDirection = 1;
     let frame = 0;
     let lastFrame = 0;
     let lastWheelTime = 0;
 
     function applyMotion() {
-      for (const animation of animations) animation.updatePlaybackRate(1 + boost);
+      for (const animation of animations) {
+        const time = animation.currentTime;
+        if (playbackRate < 0 && typeof time === 'number' && time < 500) {
+          const duration = animation.effect?.getComputedTiming().duration;
+          // Rewind through a seamless loop without reaching the animation's start.
+          if (typeof duration === 'number') animation.currentTime = time + duration;
+        }
+        animation.updatePlaybackRate(playbackRate);
+      }
       document.dispatchEvent(new CustomEvent('ambient-motion-change', {
-        detail: { paused, rippleRate },
+        detail: { paused, playbackRate },
       }));
     }
 
     function resetSpeed() {
       cancelAnimationFrame(frame);
       frame = 0;
-      boost = 0;
       requestedBoost = 0;
-      rippleRate = 1;
+      playbackRate = 1;
       applyMotion();
     }
 
@@ -131,12 +147,10 @@
     function easeSpeed(now: number) {
       if (now - lastWheelTime > 110) requestedBoost = 0;
       const elapsed = now - lastFrame;
-      const ramp = requestedBoost > boost ? 40 : 175;
-      boost += (requestedBoost - boost) * (1 - Math.exp(-elapsed / ramp));
-      const rippleTarget = requestedBoost ? wheelDirection * (1 + requestedBoost) : 1;
-      const rippleRamp = requestedBoost ? 40 : 175;
-      rippleRate += (rippleTarget - rippleRate) * (1 - Math.exp(-elapsed / rippleRamp));
-      if (!requestedBoost && boost < .02 && Math.abs(rippleRate - 1) < .02) {
+      const target = requestedBoost ? wheelDirection * (1 + requestedBoost) : 1;
+      const ramp = requestedBoost ? 40 : 175;
+      playbackRate += (target - playbackRate) * (1 - Math.exp(-elapsed / ramp));
+      if (!requestedBoost && Math.abs(playbackRate - 1) < .02) {
         resetSpeed();
         return;
       }
@@ -158,7 +172,7 @@
 
       const now = performance.now();
       wheelDirection = event.deltaY < 0 ? -1 : 1;
-      requestedBoost = Math.min(6, requestedBoost + distance / 17.5);
+      requestedBoost = Math.min(9, requestedBoost + distance / 10);
       lastWheelTime = now;
       if (!frame) {
         lastFrame = now;

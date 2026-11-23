@@ -132,7 +132,7 @@ import LampGlobe from './LampGlobe.astro';
     let lastFrame = 0;
     let lightLevel = Number(lit);
     let waterTime = 0;
-    let rippleRate = 1;
+    let playbackRate = 1;
 
     function paint() {
       ambient?.draw(lightLevel, waterTime);
@@ -148,7 +148,7 @@ import LampGlobe from './LampGlobe.astro';
       if (moving) {
         const step = elapsed / 500;
         lightLevel += Math.max(-step, Math.min(step, target - lightLevel));
-        if (!lit) waterTime = (waterTime + elapsed * rippleRate / 1000) % (40 * Math.PI);
+        if (!lit) waterTime = (waterTime + elapsed * playbackRate / 1000) % (40 * Math.PI);
       } else {
         lightLevel = target;
       }
@@ -170,8 +170,8 @@ import LampGlobe from './LampGlobe.astro';
       }).observe(canvas);
       motion.addEventListener('change', updateScene);
       document.addEventListener('ambient-motion-change', event => {
-        const detail = (event as CustomEvent<{ paused: boolean; rippleRate: number }>).detail;
-        rippleRate = detail.rippleRate;
+        const detail = (event as CustomEvent<{ paused: boolean; playbackRate: number }>).detail;
+        playbackRate = detail.playbackRate;
         if (paused !== detail.paused) {
           paused = detail.paused;
           updateScene();
