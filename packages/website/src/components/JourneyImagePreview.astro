@@ -2,19 +2,32 @@
   <form method="dialog">
     <button class="glass-control" autofocus>Close <span aria-hidden="true">×</span></button>
   </form>
+  <div class="preview-area">
+    <div class="preview-frame"></div>
+  </div>
 </dialog>
 
 <style>
   dialog {
-    max-inline-size: 100dvi;
-    max-block-size: 100dvh;
+    position: fixed;
+    inset: 0;
+    inline-size: auto;
+    block-size: auto;
+    max-inline-size: none;
+    max-block-size: none;
+    margin: 0;
     padding: 5px;
     border: 0;
     background: oklch(none none none / 0);
     color: var(--ink);
   }
   dialog:not([open]) { display: none; }
-  dialog[open] { display: grid; gap: .5rem; }
+  dialog[open] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: .5rem;
+  }
   dialog:modal { overscroll-behavior: contain; }
   dialog::backdrop {
     overflow: hidden;
@@ -31,21 +44,44 @@
     font-weight: 600;
     cursor: pointer;
   }
-  dialog > :global(img) {
+  button:focus-visible { outline-offset: -3px; }
+  .preview-area {
+    container-type: size;
+    display: grid;
+    place-items: center;
+  }
+  .preview-frame {
+    position: relative;
+    inline-size: min(100%, calc(100cqh * var(--preview-aspect, 1)));
+    aspect-ratio: var(--preview-aspect, 1);
+    overflow: hidden;
+  }
+  .preview-frame > :global(img) {
+    position: absolute;
+    inset-inline-start: var(--preview-left, 0%);
+    inset-block-start: var(--preview-top, 0%);
     display: block;
-    max-inline-size: calc(100dvi - 10px);
-    max-block-size: calc(100dvh - 3.25rem - 10px);
-    object-fit: contain;
+    inline-size: var(--preview-width, 100%);
+    max-inline-size: none;
   }
   @media (min-width: 48rem) {
     dialog {
-      max-inline-size: calc(100dvi - 1rem);
+      inline-size: fit-content;
+      block-size: fit-content;
+      max-inline-size: calc(100% - 1rem);
       max-block-size: calc(100dvh - 1rem);
+      margin: auto;
       padding: .75rem;
     }
-    dialog > :global(img) {
-      max-inline-size: calc(100dvi - 2.5rem);
+    dialog[open] { grid-template-rows: auto auto; }
+    .preview-area { container-type: normal; display: block; }
+    .preview-frame { inline-size: auto; aspect-ratio: auto; overflow: visible; }
+    .preview-frame > :global(img) {
+      position: static;
+      inline-size: auto;
+      max-inline-size: 100%;
       max-block-size: calc(100dvh - 6.5rem);
+      object-fit: contain;
     }
   }
 </style>
@@ -53,8 +89,13 @@
 <script>
   const dialog = document.querySelector<HTMLDialogElement>('#journey-image-preview');
   if (dialog && typeof dialog.showModal === 'function') {
+    const area = dialog.querySelector('.preview-area')!;
+    const frame = dialog.querySelector<HTMLElement>('.preview-frame')!;
     const image = new Image();
-    dialog.append(image);
+    frame.append(image);
+    area.addEventListener('click', event => {
+      if (event.target === area) dialog.close();
+    });
     dialog.addEventListener('close', () => {
       if (!dialog.open) image.removeAttribute('src');
     });
@@ -66,6 +107,14 @@
       const link = event.target.closest<HTMLAnchorElement>('a[data-image-preview]');
       if (!link) return;
 
+      const imageWidth = Number(link.dataset.imageWidth);
+      const imageHeight = Number(link.dataset.imageHeight);
+      const [x, y, width, height] = link.dataset.previewBounds?.split(' ').map(Number)
+        ?? [0, 0, imageWidth, imageHeight];
+      frame.style.setProperty('--preview-aspect', String(width / height));
+      frame.style.setProperty('--preview-left', `${-100 * x / width}%`);
+      frame.style.setProperty('--preview-top', `${-100 * y / height}%`);
+      frame.style.setProperty('--preview-width', `${100 * imageWidth / width}%`);
       image.alt = link.querySelector('img')?.alt ?? '';
       image.src = link.href;
       // Some browsers leave a pointer-activated link unfocused.

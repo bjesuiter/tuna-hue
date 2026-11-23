@@ -28,7 +28,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
         <p>If the command is missing, set <strong>Sources → Hue Groups → In global search</strong> to <strong>All</strong>.</p>
       </div>
       <JourneyShots shots={[
-        { image: findCommand, crop: 'tiles', alt: 'Connect First Hue Bridge selected in Tuna search.' },
+        { image: findCommand, crop: 'tiles', previewBounds: [328, 112, 928, 496], alt: 'Connect First Hue Bridge selected in Tuna search.' },
       ]} />
     </li>
 
@@ -39,9 +39,9 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
         <p>Keep your Mac and bridge on the same network. Allow local network access if macOS asks. Select your bridge, choose <strong>Continue</strong>, then press the physical link button when prompted.</p>
       </div>
       <JourneyShots shots={[
-        { image: chooseBridge, alt: 'Add Hue Bridge dialog with a discovered bridge selected.', caption: 'Choose your bridge' },
-        { image: pressButton, alt: 'Tuna waiting for the physical link button press.', caption: 'Press the link button' },
-        { image: connected, alt: 'Tuna confirms that the Hue Bridge is connected.', caption: 'Finish pairing' },
+        { image: chooseBridge, previewBounds: [96, 60, 936, 777], alt: 'Add Hue Bridge dialog with a discovered bridge selected.', caption: 'Choose your bridge' },
+        { image: pressButton, previewBounds: [96, 60, 936, 777], alt: 'Tuna waiting for the physical link button press.', caption: 'Press the link button' },
+        { image: connected, previewBounds: [96, 60, 552, 417], alt: 'Tuna confirms that the Hue Bridge is connected.', caption: 'Finish pairing' },
       ]} />
     </li>
 
@@ -52,8 +52,8 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
         <p>Search by name and look for <strong>Hue Room</strong> or <strong>Hue Zone</strong> in the result details. Press <kbd>Tab</kbd> to choose an available action and <kbd>Return</kbd> to run it.</p>
       </div>
       <JourneyShots shots={[
-        { image: turnOn, alt: 'A bedroom selected with the Turn On action.', caption: 'Turn on a room' },
-        { image: turnOff, crop: true, alt: 'A living-room group selected with the Turn Off action.', caption: 'Turn off a group' },
+        { image: turnOn, previewBounds: [19, 4, 928, 491], alt: 'A bedroom selected with the Turn On action.', caption: 'Turn on a room' },
+        { image: turnOff, crop: true, previewBounds: [328, 112, 928, 1428], alt: 'A living-room group selected with the Turn Off action.', caption: 'Turn off a group' },
       ]} />
     </li>
   </ol>
@@ -66,22 +66,22 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
       <summary>My bridge doesn’t appear</summary>
       <p>Choose <strong>Refresh</strong> in the bridge picker. You can also select <strong>Enter IP Address…</strong> and supply the local address, bridge ID, and Hue application key.</p>
       <JourneyShots shots={[
-        { image: manual, alt: 'Manual Connect Bridge form with blank address, bridge ID, optional certificate path, and application key fields.', caption: 'Enter bridge details manually' },
+        { image: manual, previewBounds: [96, 60, 736, 981], alt: 'Manual Connect Bridge form with blank address, bridge ID, optional certificate path, and application key fields.', caption: 'Enter bridge details manually' },
       ]} />
     </details>
     <details>
       <summary>My lights show as offline</summary>
       <p>Choose <strong>Check Connection</strong> to fetch the latest status. Power actions return when at least one light in the group is reachable.</p>
       <JourneyShots shots={[
-        { image: checkConnection, crop: true, alt: 'A kitchen room selected with the Check Connection action.', caption: 'Refresh the room’s connection status' },
+        { image: checkConnection, crop: true, previewBounds: [328, 112, 928, 1428], alt: 'A kitchen room selected with the Check Connection action.', caption: 'Refresh the room’s connection status' },
       ]} />
     </details>
     <details>
       <summary>I want to add or disconnect a bridge</summary>
       <p>Run <strong>Add Hue Bridge</strong> to connect another bridge. To remove one, run <strong>Manage Hue Bridges</strong>, select the bridge, and confirm <strong>Disconnect</strong>. Tuna removes its saved application key from this Mac.</p>
       <JourneyShots shots={[
-        { image: manageBridges, alt: 'Manage Hue Bridges dialog with a connected bridge selected.', caption: 'Select the bridge to remove' },
-        { image: disconnect, alt: 'Disconnect confirmation explaining that Tuna removes the saved application key.', caption: 'Confirm disconnect' },
+        { image: manageBridges, previewBounds: [96, 60, 816, 521], alt: 'Manage Hue Bridges dialog with a connected bridge selected.', caption: 'Select the bridge to remove' },
+        { image: disconnect, previewBounds: [96, 60, 552, 501], alt: 'Disconnect confirmation explaining that Tuna removes the saved application key.', caption: 'Confirm disconnect' },
       ]} />
     </details>
   </section>

@@ -8,15 +8,24 @@ interface Props {
     alt: string;
     caption?: string;
     crop?: boolean | 'tiles';
+    previewBounds?: [x: number, y: number, width: number, height: number];
   }[];
 }
 
 const { shots } = Astro.props;
 ---
 <div class="shots">
-  {shots.map(({ image, alt, caption, crop }) => (
+  {shots.map(({ image, alt, caption, crop, previewBounds }) => (
     <figure>
-      <a class:list={['shot', { crop, 'tiles-only': crop === 'tiles' }]} href={image.src} data-image-preview aria-label={`Open full screenshot. ${alt}`}>
+      <a
+        class:list={['shot', { crop, 'tiles-only': crop === 'tiles' }]}
+        href={image.src}
+        data-image-preview
+        data-image-width={image.width}
+        data-image-height={image.height}
+        data-preview-bounds={previewBounds?.join(' ')}
+        aria-label={`Open screenshot preview. ${alt}`}
+      >
         <Image src={image} alt={alt} width={Math.min(960, image.width)} loading="lazy" />
       </a>
       {caption && <figcaption>{caption}</figcaption>}
