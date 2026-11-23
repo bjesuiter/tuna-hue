@@ -1,0 +1,2 @@
+media/videos/pairing-dark-wandering.mp4 filter=lfs diff=lfs merge=lfs -text
+media/videos/pairing-light-wandering.mp4 filter=lfs diff=lfs merge=lfs -text
