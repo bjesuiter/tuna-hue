@@ -12,8 +12,8 @@ import manageBridges from '../assets/screenshots/manage-bridges.png';
 import disconnect from '../assets/screenshots/disconnect-bridge.png';
 ---
 
-<section class="journey" id="walkthrough" aria-labelledby="walkthrough-title">
-  <h2 id="walkthrough-title">From bridge to light switch.</h2>
+<section class="journey" aria-labelledby="walkthrough">
+  <h2 id="walkthrough">From bridge to light switch.</h2>
 
   <ol class="steps" role="list">
     <li>
@@ -82,9 +82,9 @@ import disconnect from '../assets/screenshots/disconnect-bridge.png';
 </section>
 
 <style>
-  .journey { padding-block: clamp(2rem, 6vw, 5rem) 5rem; scroll-margin-block: 1.5rem; }
+  .journey { padding-block: clamp(2rem, 6vw, 5rem) 5rem; }
   h2, h3 { margin: 0; line-height: 1.05; letter-spacing: -.045em; }
-  h2 { max-width: 14ch; font-size: clamp(2.75rem, 7vw, 6rem); }
+  h2 { max-width: 14ch; font-size: clamp(2.75rem, 7vw, 6rem); scroll-margin-block-start: 1.5rem; }
   h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
   .steps { list-style: none; margin: 2.5rem 0; padding: 0; display: grid; gap: 1.25rem; }
   li {
