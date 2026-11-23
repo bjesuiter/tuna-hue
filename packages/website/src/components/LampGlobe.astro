@@ -1,4 +1,12 @@
-<span class="shade lamp-transition" aria-hidden="true"></span>
+---
+interface Props {
+  /** Morph between pages with the view transition. Only one globe per page may do this. */
+  viewTransition?: boolean;
+}
+
+const { viewTransition = true } = Astro.props;
+---
+<span class:list={['shade', { 'lamp-transition': viewTransition }]} aria-hidden="true"><slot /></span>
 
 <style>
   .shade {

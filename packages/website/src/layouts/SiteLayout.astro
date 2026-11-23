@@ -223,6 +223,10 @@ const shareImage = new URL(base + '/og.png', Astro.site);
     font: var(--text-m)/1.5 var(--font-sans);
   }
 
+  /* Fixed layers can't paint into a reserved scrollbar gutter, so pages with the
+     ambient background don't reserve one; only the page colour would show there. */
+  :root:has([data-ambient-background]) { scrollbar-gutter: auto; }
+
   *, *::before, *::after { box-sizing: border-box; }
   body, p, h1, h2, h3 { margin: 0; }
   body { isolation: isolate; }
