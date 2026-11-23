@@ -27,10 +27,7 @@ private func makeHueAlert() -> NSAlert {
   guard let logo = Bundle(for: HueExtension.self).image(forResource: "HueAlertIcon") else {
     return alert
   }
-  let dark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
   alert.icon = NSImage(size: NSSize(width: 64, height: 64), flipped: false) { rect in
-    (dark ? NSColor.black : NSColor.white).setFill()
-    NSBezierPath(roundedRect: rect, xRadius: 14, yRadius: 14).fill()
     logo.draw(in: rect.insetBy(dx: 9, dy: 9), from: .zero, operation: .sourceOver, fraction: 1)
     return true
   }
