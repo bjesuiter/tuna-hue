@@ -17,7 +17,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
       </div>
       <div class="hero-actions">
-        <a class="primary-link install-link" href={base + '/install/'} data-lamp-link>Install Tuna Hue</a>
+        <a class="primary-link glass-control" href={base + '/install/'} data-lamp-link>Install Tuna Hue</a>
         <a class="walkthrough-link" href={base + '/how-it-works/'} data-lamp-link>See how it works <span aria-hidden="true">→</span></a>
       </div>
     </div>
@@ -53,7 +53,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   .summary { max-width: 29ch; color: var(--muted-ink); font-size: clamp(1.05rem, 1.5vw, 1.25rem); }
   .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin-block-start: 1.65rem; }
-  .install-link { background: var(--ink); color: var(--paper); font-weight: 700; }
   .walkthrough-link {
     display: inline-flex;
     align-items: center;
@@ -63,9 +62,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     font-weight: 600;
     text-underline-offset: .23em;
     text-decoration-color: var(--muted-ink);
-  }
-  @media (hover: hover) {
-    .install-link:hover { background: color-mix(in oklch, var(--ink) 88%, var(--paper)); }
   }
   .requirements { --requirements-height: calc(4rem + env(safe-area-inset-bottom, 0px)); }
   .requirements-bar {
