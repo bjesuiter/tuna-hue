@@ -1,16 +1,16 @@
 ---
 import JourneyImagePreview from './JourneyImagePreview.astro';
 import JourneyShots from './JourneyShots.astro';
-import findCommand from '../assets/screenshots/find-hue-command.png';
-import chooseBridge from '../assets/screenshots/choose-bridge.png';
-import pressButton from '../assets/screenshots/press-link-button.png';
-import connected from '../assets/screenshots/bridge-connected.png';
-import turnOn from '../assets/screenshots/turn-on.png';
-import turnOff from '../assets/screenshots/turn-off.png';
-import manual from '../assets/screenshots/manual-connection.png';
-import checkConnection from '../assets/screenshots/check-connection.png';
-import manageBridges from '../assets/screenshots/manage-bridges.png';
-import disconnect from '../assets/screenshots/disconnect-bridge.png';
+import findCommand from '../assets/screenshots/01-find-hue-command-light.png';
+import chooseBridge from '../assets/screenshots/02-choose-bridge-light.png';
+import pressButton from '../assets/screenshots/03-press-link-button-light.png';
+import connected from '../assets/screenshots/04-bridge-connected-light.png';
+import turnOn from '../assets/screenshots/05-turn-on-light.png';
+import turnOff from '../assets/screenshots/06-turn-off-light.png';
+import manual from '../assets/screenshots/07-manual-connection-light.png';
+import checkConnection from '../assets/screenshots/08-check-connection-light.png';
+import manageBridges from '../assets/screenshots/09-manage-bridges-light.png';
+import disconnect from '../assets/screenshots/10-disconnect-bridge-light.png';
 
 const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
 ---
@@ -40,7 +40,7 @@ const installHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/install/';
       </div>
       <JourneyShots shots={[
         { image: chooseBridge, previewBounds: [96, 60, 936, 777], alt: 'Add Hue Bridge dialog with a discovered bridge selected.', caption: 'Choose your bridge' },
-        { image: pressButton, previewBounds: [8, 8, 936, 784], alt: 'Tuna shows where to press the physical link button on a Hue Bridge.', caption: 'Press the link button' },
+        { image: pressButton, previewBounds: [96, 60, 936, 784], alt: 'Tuna shows where to press the physical link button on a Hue Bridge.', caption: 'Press the link button' },
         { image: connected, previewBounds: [96, 60, 552, 417], alt: 'Tuna confirms that the Hue Bridge is connected.', caption: 'Finish pairing' },
       ]} />
     </li>

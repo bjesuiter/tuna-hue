@@ -2,6 +2,14 @@
 set -euo pipefail
 
 cd "$HOME/tuna-hue-screenshot-run"
+mode=${1:-}
+appearance=${2:-}
+case "$appearance" in
+  light) appearance_label=Light ;;
+  dark) appearance_label=Dark ;;
+  *) exit 2 ;;
+esac
+
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 socket="$HOME/Library/Application Support/Peekaboo/bridge.sock"
 tuna=com.brnbw.Tuna
@@ -56,6 +64,43 @@ pb screen list | jq -e '
   (.data.screens[0] | .bounds.width == 1600 and .bounds.height == 1000 and .scaleFactor == 2)
 ' >/dev/null
 
+appearance_button() {
+  settings_window=$(pb window list --app "System Settings" | jq -er '
+    [.data.windows[] | select(.window_title == "Appearance" and .is_on_screen)]
+    | select(length == 1) | .[0].window_id
+  ') &&
+    pb see --window-id "$settings_window" --fresh --tree --no-screenshot --timeout 5s >ax.json &&
+    appearance_control=$(jq -er --arg label "$appearance_label" '
+      select(.success and .data.semantic_scope == "exact_or_requested")
+      | [.data.ui_elements[] | select(.label == $label and .ax_role == "AXButton"
+          and (.help // "" | endswith("appearance for buttons, menus, and windows.")))]
+      | select(length == 1) | .[0]
+    ' ax.json)
+}
+
+appearance_selected() {
+  local interface_style
+  interface_style=$(defaults read -g AppleInterfaceStyle 2>/dev/null || true)
+  if [[ "$appearance" == dark ]]; then
+    [[ "$interface_style" == Dark ]]
+  else
+    [[ -z "$interface_style" ]]
+  fi
+}
+
+step="set macOS appearance to $appearance"
+open 'x-apple.systempreferences:com.apple.Appearance-Settings.extension'
+wait_for appearance_button
+if ! jq -e '.is_selected == true' <<<"$appearance_control" >/dev/null; then
+  pb click --window-id "$settings_window" --on "$(jq -er .id <<<"$appearance_control")" \
+    --snapshot "$(jq -er .data.snapshot_id ax.json)" --foreground --input-strategy synthOnly \
+    >appearance-click.json || true
+  jq -e '.success or .outcome.mutation_dispatched' appearance-click.json >/dev/null ||
+    { cat appearance-click.json >&2; exit 1; }
+fi
+wait_for appearance_selected
+pkill -TERM -x 'System Settings' || true
+
 step="install the developer extension and launch Tuna"
 extensions="$HOME/Library/Application Support/Tuna/ExtensionsDev"
 [[ ! -e "$extensions/TunaHue.framework" ]]
@@ -75,7 +120,7 @@ defaults write "$tuna" AutomaticallyShowResults -bool YES
 defaults write "$tuna" ShowResultsImmediatelyOnActivation -bool YES
 
 launch_args=(-g -j -F -n)
-if [[ ${1:-} == --all ]]; then
+if [[ "$mode" == --all ]]; then
   step="start the mock Hue bridge"
   # Keep the server log readable by the guest user.
   # shellcheck disable=SC2024
@@ -96,7 +141,7 @@ tuna_running() {
   pgrep -x Tuna >/dev/null || { open "${launch_args[@]}" -a /Applications/Tuna.app >&2 || true; return 1; }
 }
 wait_for tuna_running
-if [[ ${1:-} == --all ]]; then
+if [[ "$mode" == --all ]]; then
   step="verify Tuna received the mock discovery configuration"
   environment=$(ps eww -p "$(pgrep -x Tuna)" -o command=)
   [[ "$environment" == *"TUNA_HUE_DISCOVERY_URL=$discovery"* &&
@@ -139,13 +184,16 @@ if ! wait_for launcher_ready; then
 fi
 
 capture() {
-  printf 'Capturing %s.png\n' "$1" >&2
+  local number filename
+  number=$(awk -v name="$1" '$0 == name { print NR; found=1 } END { exit !found }' order.txt)
+  printf -v filename '%02d-%s-%s.png' "$number" "$1" "$appearance"
+  printf 'Capturing %s\n' "$filename" >&2
   pb see --window-id "$window" --mode window --no-elements --retina --capture-engine cg \
-    --timeout 10s --format png --path "$PWD/$1.png" | jq -e '.success' >/dev/null
+    --timeout 10s --format png --path "$PWD/$filename" | jq -e '.success' >/dev/null
 }
 step="capture the exact Retina window"
 capture find-hue-command
-[[ ${1:-} == --all ]] || exit 0
+[[ "$mode" == --all ]] || exit 0
 
 has_label() {
   jq -e --arg label "$1" '

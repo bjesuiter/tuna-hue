@@ -4,20 +4,20 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-guard CommandLine.arguments.count == 3 else { exit(2) }
+guard CommandLine.arguments.count == 4 else { exit(2) }
 let staged = CommandLine.arguments[1]
 let destination = CommandLine.arguments[2]
-let expected: [String: (Int, Int)] = [
-  "bridge-connected.png": (744, 608),
-  "check-connection.png": (1584, 1652),
-  "choose-bridge.png": (1128, 968),
-  "disconnect-bridge.png": (744, 692),
-  "find-hue-command.png": (1584, 1652),
-  "manage-bridges.png": (1008, 712),
-  "manual-connection.png": (928, 1172),
-  "press-link-button.png": (1128, 968),
-  "turn-off.png": (1584, 1652),
-  "turn-on.png": (960, 495),
+let dimensionsBySlug: [String: (Int, Int)] = [
+  "bridge-connected": (744, 608),
+  "check-connection": (1584, 1652),
+  "choose-bridge": (1128, 968),
+  "disconnect-bridge": (744, 692),
+  "find-hue-command": (1584, 1652),
+  "manage-bridges": (1008, 712),
+  "manual-connection": (928, 1172),
+  "press-link-button": (1128, 976),
+  "turn-off": (1584, 1652),
+  "turn-on": (960, 495),
 ]
 
 func fail(_ message: String) -> Never {
@@ -25,14 +25,31 @@ func fail(_ message: String) -> Never {
   exit(1)
 }
 
-for directory in [staged, destination] {
-  let names = try FileManager.default.contentsOfDirectory(atPath: directory)
-  guard Set(names) == Set(expected.keys) else {
-    fail("Unexpected file set in \(directory). Expected \(expected.keys.sorted().joined(separator: ", ")).")
-  }
+let order = try String(contentsOfFile: CommandLine.arguments[3], encoding: .utf8)
+  .split(whereSeparator: \.isNewline).map(String.init)
+guard order.count == dimensionsBySlug.count, Set(order) == Set(dimensionsBySlug.keys) else {
+  fail("The screenshot order must list each known state exactly once.")
 }
 
-for (name, dimensions) in expected.sorted(by: { $0.key < $1.key }) {
+let appearances = ["light", "dark"]
+let captures = order.enumerated().flatMap { index, slug in
+  appearances.map { appearance in
+    (name: String(format: "%02d", index + 1) + "-\(slug)-\(appearance).png", slug: slug)
+  }
+}
+let expectedNames = Set(captures.map(\.name))
+let legacyNames = Set(order.map { "\($0).png" })
+let stagedNames = Set(try FileManager.default.contentsOfDirectory(atPath: staged))
+let destinationNames = Set(try FileManager.default.contentsOfDirectory(atPath: destination))
+guard stagedNames == expectedNames else {
+  fail("Unexpected staged file set. Expected \(expectedNames.sorted().joined(separator: ", ")).")
+}
+guard destinationNames == expectedNames || destinationNames == legacyNames else {
+  fail("Unexpected file set in \(destination).")
+}
+
+for (name, slug) in captures {
+  let dimensions = dimensionsBySlug[slug]!
   let url = URL(fileURLWithPath: staged, isDirectory: true).appendingPathComponent(name)
   guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
         CGImageSourceGetType(source) as String? == "public.png",
@@ -42,7 +59,7 @@ for (name, dimensions) in expected.sorted(by: { $0.key < $1.key }) {
   if (image.width, image.height) == dimensions { continue }
 
   let framed: CGImage?
-  if name == "turn-on.png", image.width == 1584, [720, 1652].contains(image.height) {
+  if slug == "turn-on", image.width == 1584, [720, 1652].contains(image.height) {
     // Keep the launcher tiles at the same offset as the original close-up.
     framed = image.cropping(to: CGRect(x: 309, y: 108, width: 960, height: 495))
   } else if (image.width + 224, image.height + 224) == dimensions,

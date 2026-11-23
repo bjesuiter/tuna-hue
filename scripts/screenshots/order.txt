@@ -1,0 +1,10 @@
+find-hue-command
+choose-bridge
+press-link-button
+bridge-connected
+turn-on
+turn-off
+manual-connection
+check-connection
+manage-bridges
+disconnect-bridge

@@ -1,38 +1,42 @@
 # Website screenshots
 
-The walkthrough uses the PNGs in `packages/website/src/assets/screenshots`. Its
-preview crops use coordinates in the original PNGs.
+The walkthrough uses the PNGs in `packages/website/src/assets/screenshots`.
+Each state has two files, such as `03-press-link-button-light.png` and
+`03-press-link-button-dark.png`. Both share a number so they sort together.
+[`order.txt`](order.txt) defines the sequence, starting with connecting a bridge.
+The walkthrough and repository README display the light variants.
 
-| Filename | State | Original pixels |
-| --- | --- | --- |
-| `find-hue-command.png` | Fuzzy Mode search for `hue`, with **Connect First Hue Bridge** selected and the results list expanded | 1584 × 1652 |
-| `choose-bridge.png` | Automatic pairing with **Demo Hue Bridge** selected and **Continue** available | 1128 × 968 |
-| `press-link-button.png` | Pairing dialog waiting for the link button on **Demo Hue Bridge** | 1128 × 968 |
-| `bridge-connected.png` | Successful pairing with **Demo Hue Bridge** and **Done** | 744 × 608 |
-| `manual-connection.png` | **Connect Bridge** manual form with all fields blank | 928 × 1172 |
-| `turn-on.png` | **Bedroom** selected with **Turn On** available | 960 × 495 |
-| `turn-off.png` | **Living Room** selected with **Turn Off** available and the results list expanded | 1584 × 1652 |
-| `check-connection.png` | Offline **Kitchen** selected with **Check Connection** available and the results list expanded | 1584 × 1652 |
-| `manage-bridges.png` | **Manage Hue Bridges** dialog with **Demo Hue Bridge** selected | 1008 × 712 |
-| `disconnect-bridge.png` | Confirmation after choosing **Disconnect** for **Demo Hue Bridge** | 744 × 692 |
+| Number | State |
+| --- | --- |
+| 01 | Find **Connect First Hue Bridge** in Tuna |
+| 02 | Select **Demo Hue Bridge** and choose **Continue** |
+| 03 | Wait for the physical link button |
+| 04 | Confirm the bridge connected |
+| 05 | Select **Bedroom** with **Turn On** |
+| 06 | Select **Living Room** with **Turn Off** |
+| 07 | Open the blank manual connection form |
+| 08 | Select offline **Kitchen** with **Check Connection** |
+| 09 | Open **Manage Hue Bridges** |
+| 10 | Confirm disconnecting **Demo Hue Bridge** |
 
 ## Regenerate the screenshots
 
 On an Apple Silicon Mac with Tart 2.42.0, Bun and Xcode, run this from the
-repository root after preparing the VM below.
+repository root after preparing the guest below.
 
 ```sh
 bun run screenshots
 ```
 
-The command clones the guest, builds and transfers the current extension,
-starts the loopback mock, and captures the ten states with Peekaboo. It removes
-the clone, verifies the filenames and PNG dimensions, then atomically exchanges
-the screenshot directory. The framing preserves the website's crop coordinates.
+The command builds the current extension once. It captures all ten states
+in light appearance, then repeats in a fresh clone in dark appearance. Each
+clone starts with an unpaired mock bridge and verifies the selected appearance
+in System Settings before launching Tuna. After removing the clones, the
+command checks all 20 filenames and PNG dimensions before atomically
+exchanging the screenshot directory.
 
-Use `bun run screenshots:proof` to stage just the launcher, or
-`bun run screenshots:proof --all` to stage all ten raw window captures for
-inspection.
+Use `bun run screenshots:proof` to stage both launcher captures, or
+`bun run screenshots:proof --all` to stage all 20 raw captures for inspection.
 
 ## Prepare the guest once
 
