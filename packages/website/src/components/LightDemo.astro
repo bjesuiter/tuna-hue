@@ -1,10 +1,13 @@
+---
+import LampGlobe from './LampGlobe.astro';
+---
 <div class="demo" data-light-demo>
   <div class="stage">
     <div class="wash" aria-hidden="true"></div>
     <div class="water" aria-hidden="true"></div>
     <canvas aria-hidden="true"></canvas>
     <button class="fixture" type="button" aria-label="Turn Off Living Room lights" disabled>
-      <span class="shade lamp-transition" aria-hidden="true"></span>
+      <LampGlobe />
     </button>
   </div>
   <div class="demo-controls">
@@ -73,28 +76,6 @@
       radial-gradient(ellipse at 65% 55% in oklch, oklch(88.8% 0.081 311 / 0.455), oklch(none none none / 0) 50%),
       radial-gradient(ellipse at 79% 72% in oklch, oklch(90% 0.082 175 / 0.439), oklch(none none none / 0) 45%);
   }
-  .shade {
-    position: relative;
-    width: 100%;
-    border: 1px solid oklch(100% 0 0 / 0.6);
-    aspect-ratio: 1.06;
-    border-radius: 50%;
-    background: radial-gradient(circle at 37% 32% in oklch, oklch(100% 0 0) 16%, oklch(97.14% 0.0127 63.9) 48%, oklch(86.13% 0.0294 33.7) 76%, oklch(76.56% 0.0395 352.8) 100%);
-    box-shadow: 0 8px 34px oklch(87.87% 0.0432 10.8 / 0.471), inset -10px -12px 22px oklch(74.94% 0.0398 348.3 / 0.188);
-  }
-  .shade::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    border: 1px solid oklch(67.81% 0.0622 254.9 / 0.533);
-    background: radial-gradient(circle at 33% 25% in oklch, oklch(52.58% 0.0501 250.8) 0%, oklch(34.66% 0.0537 253.3) 48%, oklch(22.24% 0.0406 260.8) 78%);
-    box-shadow: inset 2px 2px 6px oklch(93.21% 0.0339 249.6 / 0.6), 0 8px 40px oklch(79.58% 0.0962 256.4 / 0.208);
-    opacity: 0;
-  }
-  :global([data-lamp="off"]) .shade { box-shadow: none; }
-  :global([data-lamp="off"]) .shade::after { opacity: 1; }
-
   .demo-controls { width: min(100%, 23rem); }
   .caption {
     margin: 0 .3rem .5rem;
@@ -117,8 +98,8 @@
   }
   button:enabled { cursor: pointer; }
   @media (hover: hover) {
-    .fixture:enabled:hover .shade { filter: brightness(1.025); }
-    :global([data-lamp="off"]) .fixture:enabled:hover .shade { filter: brightness(1.08); }
+    .fixture:enabled:hover :global(.lamp-transition) { filter: brightness(1.025); }
+    :global([data-lamp="off"]) .fixture:enabled:hover :global(.lamp-transition) { filter: brightness(1.08); }
   }
   button:enabled:active { filter: brightness(.93); }
   .room { display: grid; line-height: 1.25; }
@@ -128,8 +109,7 @@
   .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .wash, .water, .shade::after { transition: opacity 500ms ease; }
-    .shade { transition: box-shadow 500ms ease; }
+    .wash, .water { transition: opacity 500ms ease; }
   }
 </style>
 
