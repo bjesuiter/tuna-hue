@@ -15,6 +15,16 @@ mkdir -p "$extensionsDir"
 ditto \\
   packages/plugin/build/Build/Products/Release/TunaHue.framework \\
   "$extensionsDir/TunaHue.framework"`;
+
+const agentPrompt = `Build and install Tuna Hue Control on this Mac. Check for macOS 15+, Tuna 0.113+, and Xcode 16+ first. Run the following commands in order. Copy the framework only after the build succeeds.
+
+${fetchSource}
+
+${buildExtension}
+
+${installExtension}
+
+Tell me when the framework is installed and show me any errors you encounter. I’ll restart Tuna, make the trust decision if prompted, and pair my Hue Bridge with Connect First Hue Bridge.`;
 ---
 
 <article class="guide" aria-labelledby="install-title">
@@ -22,13 +32,19 @@ ditto \\
 
   <section class="install-card glass-panel glass-rainbow" aria-labelledby="store-title">
     <h2 id="store-title">Install from the extension store</h2>
-    <p class="availability">Tuna Hue Control is coming soon to the store.</p>
+    <p class="availability">Tuna Hue Control might come to the store soon.</p>
     <p>Extension developers and Tuna’s maintainer work together to review each extension by hand before it appears in the store.</p>
-    <p>In the meantime, you can <a href="#build-from-source">build Tuna Hue Control from source</a>.</p>
+    <p>In the meantime, you can <a href="#agent-build">ask your agent to build it</a> or <a href="#build-from-source">build it manually</a>.</p>
+  </section>
+
+  <section class="agent install-card glass-panel glass-rainbow" aria-labelledby="agent-build">
+    <h2 id="agent-build">Let your agent build from source</h2>
+    <p>Copy this prompt into a coding agent with Terminal access on the Mac where you use Tuna.</p>
+    <pre class="agent-prompt" tabindex="0" aria-label="Prompt for your coding agent">{agentPrompt}</pre>
   </section>
 
   <section class="source" aria-labelledby="build-from-source">
-    <h2 id="build-from-source">Build from source</h2>
+    <h2 id="build-from-source">Build from source (manually)</h2>
 
     <div class="install-card requirements glass-panel glass-rainbow">
       <h3>Before you start</h3>
@@ -93,7 +109,8 @@ ditto \\
   }
   .install-card p { margin-block-start: .6rem; }
   .availability { color: var(--ink); font-weight: 650; }
-  .source { margin-block-start: clamp(2rem, 5vw, 3rem); }
+  .agent, .source { margin-block-start: clamp(2rem, 5vw, 3rem); }
+  .agent { scroll-margin-block-start: 1.5rem; }
   .source h2 { margin-block-end: 1rem; scroll-margin-block-start: 1.5rem; }
   .requirements ul { margin-block: .6rem 0; padding-inline-start: 1.2rem; }
   .steps {
@@ -108,13 +125,10 @@ ditto \\
   .steps p { margin-block-start: .6rem; }
   pre {
     max-inline-size: 100%;
-    padding: .95rem 1rem;
     margin-block: .8rem 0;
     overflow: auto;
-    border: 1px solid var(--line);
-    border-radius: .7rem;
-    background: var(--paper);
     font: .825rem/1.65 ui-monospace, monospace;
   }
   code { font: inherit; }
+  .agent-prompt { white-space: pre-wrap; overflow-wrap: anywhere; }
 </style>

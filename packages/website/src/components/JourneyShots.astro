@@ -7,7 +7,7 @@ interface Props {
     image: ImageMetadata;
     alt: string;
     caption: string;
-    crop?: boolean;
+    crop?: boolean | 'tiles';
   }[];
 }
 
@@ -16,7 +16,7 @@ const { shots } = Astro.props;
 <div class="shots">
   {shots.map(({ image, alt, caption, crop }) => (
     <figure>
-      <a class:list={['shot', { crop }]} href={image.src} aria-label={`Open full screenshot. ${alt}`}>
+      <a class:list={['shot', { crop, 'tiles-only': crop === 'tiles' }]} href={image.src} aria-label={`Open full screenshot. ${alt}`}>
         <Image src={image} alt={alt} width={Math.min(960, image.width)} loading="lazy" />
       </a>
       <figcaption>{caption}</figcaption>
@@ -37,9 +37,6 @@ const { shots } = Astro.props;
     max-width: 30rem;
     aspect-ratio: 1.55;
     overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: .75rem;
-    background: radial-gradient(ellipse at 80% 95% in oklch, var(--shot-wash, oklch(93.99% 0.0373 308)), oklch(none none none / 0) 70%), var(--shot-surface, oklch(97.53% 0.0067 295.5));
   }
   img { display: block; width: 100%; height: 100%; object-fit: contain; min-height: 0; }
   .crop { position: relative; }
@@ -52,5 +49,7 @@ const { shots } = Astro.props;
     left: 50%;
     translate: -50% 0;
   }
+  .tiles-only { aspect-ratio: 1.95; }
+  .tiles-only img { top: -22%; }
   figcaption { margin-top: .45rem; font-size: .84rem; font-weight: 650; }
 </style>
