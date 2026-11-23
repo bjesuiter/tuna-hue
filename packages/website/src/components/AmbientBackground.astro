@@ -94,8 +94,7 @@
     let requestedBoost = 0;
     let frame = 0;
     let lastFrame = 0;
-    let lastScroll = window.scrollY;
-    let lastScrollTime = 0;
+    let lastWheelTime = 0;
 
     function resetSpeed() {
       cancelAnimationFrame(frame);
@@ -120,8 +119,8 @@
     }
 
     function easeSpeed(now: number) {
-      if (now - lastScrollTime > 110) requestedBoost = 0;
-      const ramp = requestedBoost > boost ? 85 : 175;
+      if (now - lastWheelTime > 110) requestedBoost = 0;
+      const ramp = requestedBoost > boost ? 40 : 175;
       boost += (requestedBoost - boost) * (1 - Math.exp(-(now - lastFrame) / ramp));
       if (!requestedBoost && boost < .02) {
         resetSpeed();
@@ -133,14 +132,19 @@
       frame = requestAnimationFrame(easeSpeed);
     }
 
-    window.addEventListener('scroll', () => {
-      const distance = Math.abs(window.scrollY - lastScroll);
-      lastScroll = window.scrollY;
-      if (!distance || paused || !animations.length) return;
+    window.addEventListener('wheel', event => {
+      if (paused || !animations.length || event.ctrlKey) return;
+
+      const mode = event.deltaMode;
+      const unit = mode === WheelEvent.DOM_DELTA_LINE ? 16
+        : mode === WheelEvent.DOM_DELTA_PAGE ? window.innerHeight
+        : 1;
+      const distance = Math.hypot(event.deltaX, event.deltaY) * unit;
+      if (!distance) return;
 
       const now = performance.now();
-      requestedBoost = Math.min(3.5, requestedBoost + distance / 70);
-      lastScrollTime = now;
+      requestedBoost = Math.min(6, requestedBoost + distance / 17.5);
+      lastWheelTime = now;
       if (!frame) {
         lastFrame = now;
         frame = requestAnimationFrame(easeSpeed);
