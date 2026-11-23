@@ -558,8 +558,18 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
     confirm.alertStyle = .warning
     confirm.messageText = "Disconnect “\(label(for: record, among: records))”?"
     confirm.informativeText = "Tuna will remove this bridge and its saved application key from this Mac."
-    confirm.addButton(withTitle: "Cancel")
-    confirm.addButton(withTitle: "Disconnect").hasDestructiveAction = true
+    let cancel = confirm.addButton(withTitle: "Cancel")
+    confirm.addButton(withTitle: "Disconnect")
+    confirm.layout()
+    let window = confirm.window
+    window.defaultButtonCell = cancel.cell as? NSButtonCell
+    // Setting a default button replaces Cancel's Escape shortcut with Return.
+    let escape = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+      guard event.window === window, event.charactersIgnoringModifiers == "\u{1b}" else { return event }
+      cancel.performClick(nil)
+      return nil
+    }
+    defer { if let escape { NSEvent.removeMonitor(escape) } }
     guard confirm.runModal() == .alertSecondButtonReturn else { return false }
     try HueConnections.disconnect(record.id)
     return true
