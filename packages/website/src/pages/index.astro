@@ -1,0 +1,116 @@
+---
+import LightDemo from '../components/LightDemo.astro';
+import Walkthrough from '../components/Walkthrough.astro';
+
+const source = 'https://github.com/bjesuiter/tuna-hue';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Turn Philips Hue rooms and zones on or off from the Tuna launcher for macOS." />
+    <title>Tuna Hue Control — Lights at your fingertips</title>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <a class="wordmark" href={import.meta.env.BASE_URL}><span class="mark" aria-hidden="true"></span>Tuna Hue Control</a>
+        <a href={source}>GitHub <span aria-hidden="true">↗</span></a>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="headline">
+          <div class="intro">
+            <p class="eyebrow">A Tuna extension for Philips Hue</p>
+            <h1 id="headline">Lights at your fingertips.</h1>
+            <p class="summary">Find a room or zone in Tuna and turn its lights on or off, right from your Mac.</p>
+            <a class="install" href={source + '#get-started'}>Get started <span aria-hidden="true">↗</span></a>
+            <a class="walkthrough-link" href="#walkthrough">See how it works <span aria-hidden="true">↓</span></a>
+          </div>
+          <LightDemo />
+        </section>
+        <section class="compatibility" aria-label="Requirements">
+          <p>macOS 15+</p>
+          <p>Tuna 0.113+</p>
+          <p>Philips Hue Bridge</p>
+        </section>
+        <Walkthrough />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    color-scheme: light;
+    --paper: #fff;
+    --ink: #16151a;
+    --muted-ink: #595665;
+    --line: #dedce4;
+    --lime: #e5fb65;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.5 'Avenir Next', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body, p, h1 { margin: 0; }
+  button { font: inherit; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid #6646d3; outline-offset: 5px; }
+
+  .page { max-width: 90rem; margin-inline: auto; padding-inline: clamp(1.25rem, 5vw, 5rem); }
+  header, .compatibility { display: flex; align-items: center; }
+  header { min-height: 5rem; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); }
+  header a { text-decoration: none; font-weight: 650; font-size: .875rem; }
+  header a:hover { text-decoration: underline; }
+  .wordmark { display: inline-flex; gap: .65rem; align-items: center; }
+  .mark {
+    width: 1.1rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid var(--ink);
+    box-shadow: 2px 2px var(--ink);
+    background: conic-gradient(#f591d7, #a998fa, #8df5ef, var(--lime), #ffbb77, #f591d7);
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 4.5rem);
+    padding-block: clamp(3rem, 7vw, 7rem);
+  }
+  .eyebrow, .compatibility { font: 600 .72rem/1.5 ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; }
+  .intro { container-type: inline-size; }
+  h1 {
+    max-width: 8ch;
+    margin-block: .9rem 1.2rem;
+    font: 800 clamp(2.6rem, 19cqi, 8rem)/.89 'Avenir Next', system-ui, sans-serif;
+    letter-spacing: -.06em;
+    text-wrap: balance;
+  }
+  .summary { max-width: 29ch; color: var(--muted-ink); font-size: clamp(1.05rem, 1.5vw, 1.25rem); }
+  .install {
+    display: inline-flex;
+    gap: 1.1rem;
+    margin-top: 1.65rem;
+    background: var(--lime);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px var(--ink);
+    padding: .7rem .95rem;
+    border-radius: .35rem;
+    text-decoration: none;
+    font-weight: 750;
+  }
+  .install:hover { background: #f0ffab; }
+  .walkthrough-link { display: inline-block; margin: 1rem 0 0 .95rem; font-size: .9rem; font-weight: 650; text-underline-offset: .2em; }
+  .compatibility { border-block: 1px solid var(--line); gap: .7rem 2rem; flex-wrap: wrap; padding-block: 1rem; margin-bottom: 2rem; }
+  @media (max-width: 48rem) {
+    header { min-height: 3.8rem; }
+    .hero { grid-template-columns: 1fr; gap: 2.4rem; }
+  .intro { container-type: inline-size; }
+    h1 { max-width: 10ch; font-size: clamp(3.2rem, 10vw, 5.5rem); }
+  }
+</style>

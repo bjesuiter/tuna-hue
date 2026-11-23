@@ -1,0 +1,7 @@
+{
+  "name": "@tuna-hue/plugin",
+  "private": true,
+  "scripts": {
+    "build": "xcodebuild -project TunaHue.xcodeproj -scheme TunaHue -configuration Release -destination 'generic/platform=macOS' -derivedDataPath build build"
+  }
+}

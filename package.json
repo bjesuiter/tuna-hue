@@ -1,0 +1,12 @@
+{
+  "name": "tuna-hue",
+  "private": true,
+  "packageManager": "bun@1.4.5",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "bun --filter @tuna-hue/website dev",
+    "build": "bun --filter @tuna-hue/website build",
+    "preview": "bun --filter @tuna-hue/website preview",
+    "build:plugin": "bun --filter @tuna-hue/plugin build"
+  }
+}

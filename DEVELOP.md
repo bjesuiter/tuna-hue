@@ -2,15 +2,14 @@
 
 ## Build and install from source
 
-Requires macOS 15 or later, Tuna 0.113 or later with a compatible TunaKit, and Xcode. The project pins TunaKit 1.23.0. From the repository root, build and copy the framework into Tuna’s developer extensions folder.
+Requires macOS 15 or later, Tuna 0.113 or later with a compatible TunaKit, and Xcode. The project pins TunaKit 1.23.0. From the repository root, run the Bun workspace build and copy the framework into Tuna’s developer extensions folder.
 
 ```sh
-xcodebuild -project TunaHue.xcodeproj -scheme TunaHue -configuration Release \
-  -destination 'generic/platform=macOS' -derivedDataPath build build
+bun run build:plugin
 
 dev_dir="$HOME/Library/Application Support/Tuna/ExtensionsDev"
 mkdir -p "$dev_dir"
-ditto build/Build/Products/Release/TunaHue.framework "$dev_dir/TunaHue.framework"
+ditto packages/plugin/build/Build/Products/Release/TunaHue.framework "$dev_dir/TunaHue.framework"
 ```
 
 Quit and reopen Tuna after installation or a rebuild. Tuna supplies the TunaKit framework at runtime. [Tuna extension development guide](https://tunaformac.com/docs/building-an-extension#step-4-run-it)
@@ -43,3 +42,10 @@ hue_ca="$HOME/Downloads/hue-ca.pem"
 ```
 
 Copy the returned `success.username` into Tuna’s **Application key** field. If the bridge reports that the link button was not pressed, press it again immediately before retrying. [Philips Hue pairing guide](https://developers.meethue.com/develop/get-started-2/)
+
+## Marketing site
+
+From the repository root, run `bun install` and then `bun run dev`. Open
+`http://localhost:4321/tuna-hue/`. The static build command is `bun run build`,
+which writes to `packages/website/dist`. Run `bun run preview` to serve that build
+locally. The Astro config uses the repository GitHub Pages path.

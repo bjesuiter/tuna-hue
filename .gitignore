@@ -2,3 +2,7 @@
 /build/
 /DerivedData/
 xcuserdata/
+/packages/plugin/build/
+/packages/website/dist/
+node_modules/
+.astro/
