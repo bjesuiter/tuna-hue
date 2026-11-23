@@ -1,3 +1,4 @@
+import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 import { fontFiles } from './fonts.mjs';
 
@@ -6,6 +7,7 @@ export default defineConfig({
   site: 'https://bjesuiter.github.io',
   base: '/tuna-hue',
   build: { inlineStylesheets: 'always' },
+  integrations: [sitemap()],
   fonts: [
     {
       provider: fontProviders.local(),
