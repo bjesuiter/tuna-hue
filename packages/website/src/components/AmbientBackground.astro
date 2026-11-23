@@ -3,6 +3,7 @@
     <span class="glow peach"></span>
     <span class="glow lilac"></span>
     <span class="glow mint"></span>
+    <span class="glow blue"></span>
   </div>
   <button type="button" hidden>Pause ambient motion</button>
 </div>
@@ -21,13 +22,20 @@
   }
   .glow {
     position: absolute;
-    inline-size: max(65vw, 25rem);
-    block-size: max(83%, 27rem);
-    background: radial-gradient(ellipse closest-side, var(--light), transparent);
+    inline-size: max(86vw, 29rem);
+    block-size: max(102%, 32rem);
+    background: radial-gradient(
+      ellipse closest-side,
+      var(--light) 0%,
+      color-mix(in srgb, var(--light) 78%, transparent) 32%,
+      color-mix(in srgb, var(--light) 24%, transparent) 69%,
+      transparent 100%
+    );
   }
-  .peach { --light: #ffc8a66e; inset: -15% auto auto -24%; }
-  .lilac { --light: #d5b8fa66; inset: 21% auto auto 19%; }
-  .mint { --light: #9fddd455; inset: -10% -23% auto auto; }
+  .peach { --light: #ffb191bb; inset: -29% auto auto -26%; }
+  .lilac { --light: #c19afbc0; inset: 6% auto auto 4%; }
+  .mint { --light: #83dfc7b0; inset: -12% -27% auto auto; }
+  .blue { --light: #a2c9ffc4; inset: 42% auto auto 5%; }
 
   button {
     position: absolute;
@@ -49,6 +57,19 @@
 </style>
 
 <script>
+  function driftFrames(): Keyframe[] {
+    const turn = 2 * Math.PI;
+    const phases = Array.from({ length: 4 }, () => Math.random() * turn);
+
+    // Whole harmonics let an irregular path loop without a jump.
+    return Array.from({ length: 101 }, (_, index) => {
+      const angle = index * turn / 100;
+      const x = 40 * Math.sin(angle + phases[0]) + 14 * Math.sin(3 * angle + phases[1]);
+      const y = 34 * Math.sin(angle + phases[2]) + 12 * Math.sin(2 * angle + phases[3]);
+      return { transform: `translate(${x.toFixed(2)}%, ${y.toFixed(2)}%)` };
+    });
+  }
+
   const background = document.querySelector('[data-ambient-background]');
   if (background) {
     const button = background.querySelector('button')!;
@@ -57,14 +78,17 @@
     let animations: Animation[] = [];
     let paused = false;
     let boost = 0;
+    let requestedBoost = 0;
     let frame = 0;
     let lastFrame = 0;
     let lastScroll = window.scrollY;
+    let lastScrollTime = 0;
 
     function resetSpeed() {
       cancelAnimationFrame(frame);
       frame = 0;
       boost = 0;
+      requestedBoost = 0;
       for (const animation of animations) animation.updatePlaybackRate(1);
     }
 
@@ -75,30 +99,25 @@
       button.hidden = !motion.matches;
       if (!motion.matches) return;
 
-      animations = Array.from(glows, (glow, index) => glow.animate([
-        'none',
-        'translate(19%, 12%) scale(1.14)',
-        'translate(3%, 27%) scale(.93)',
-        'translate(-17%, 6%) scale(1.06)',
-        'none',
-      ].map(transform => ({ transform, easing: 'ease-in-out' })), {
-        duration: 16000 + index * 3700,
-        delay: -index * 5400,
+      animations = Array.from(glows, glow => glow.animate(driftFrames(), {
+        duration: 19000 + Math.random() * 12000,
         iterations: Infinity,
       }));
       if (paused) for (const animation of animations) animation.pause();
     }
 
-    function easeBack(now: number) {
-      boost *= Math.exp(-(now - lastFrame) / 330);
-      if (boost < .025) {
+    function easeSpeed(now: number) {
+      if (now - lastScrollTime > 110) requestedBoost = 0;
+      const ramp = requestedBoost > boost ? 85 : 175;
+      boost += (requestedBoost - boost) * (1 - Math.exp(-(now - lastFrame) / ramp));
+      if (!requestedBoost && boost < .02) {
         resetSpeed();
         return;
       }
 
       for (const animation of animations) animation.updatePlaybackRate(1 + boost);
       lastFrame = now;
-      frame = requestAnimationFrame(easeBack);
+      frame = requestAnimationFrame(easeSpeed);
     }
 
     window.addEventListener('scroll', () => {
@@ -106,10 +125,12 @@
       lastScroll = window.scrollY;
       if (!distance || paused || !animations.length) return;
 
-      boost = Math.min(3, boost + distance / 85);
+      const now = performance.now();
+      requestedBoost = Math.min(3.5, requestedBoost + distance / 70);
+      lastScrollTime = now;
       if (!frame) {
-        lastFrame = performance.now();
-        frame = requestAnimationFrame(easeBack);
+        lastFrame = now;
+        frame = requestAnimationFrame(easeSpeed);
       }
     }, { passive: true });
 
