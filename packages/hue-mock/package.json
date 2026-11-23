@@ -1,0 +1,9 @@
+{
+  "name": "@tuna-hue/hue-mock",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun server.ts",
+    "smoke-test": "bun test smoke.test.ts"
+  }
+}

@@ -4,6 +4,39 @@ import os
 import SwiftUI
 import TunaKit
 
+@MainActor
+private final class HueAlert: NSAlert {
+  override func layout() {
+    super.layout()
+    // AppKit chooses the alert layout. Move only the view displaying our icon.
+    guard let content = window.contentView,
+          let iconView = content.subviews.compactMap({ $0 as? NSImageView })
+            .first(where: { $0.image === icon }) else { return }
+    iconView.frame.origin.x = content.bounds.midX - iconView.frame.width / 2
+  }
+
+  override func runModal() -> NSApplication.ModalResponse {
+    layout()
+    return super.runModal()
+  }
+}
+
+@MainActor
+private func makeHueAlert() -> NSAlert {
+  let alert = HueAlert()
+  guard let logo = Bundle(for: HueExtension.self).image(forResource: "HueAlertIcon") else {
+    return alert
+  }
+  let dark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+  alert.icon = NSImage(size: NSSize(width: 64, height: 64), flipped: false) { rect in
+    (dark ? NSColor.black : NSColor.white).setFill()
+    NSBezierPath(roundedRect: rect, xRadius: 14, yRadius: 14).fill()
+    logo.draw(in: rect.insetBy(dx: 9, dy: 9), from: .zero, operation: .sourceOver, fraction: 1)
+    return true
+  }
+  return alert
+}
+
 extension TypeID {
   static let hueGroup = TypeID("de.bjesuiter.tuna.type.hue-group")
 }
@@ -84,7 +117,7 @@ private enum HuePairing {
       let id = bridge.id.lowercased()
       try HueConnections.requireNew(id)
       let address = bridge.internalipaddress
-      let client = try HueBridge(address: address, id: id, caPEM: hueRootCertificates)
+      let client = try bridge.pairingClient()
       prompt.showPairing(for: name)
       while true {
         try Task.checkCancellation()
@@ -97,7 +130,9 @@ private enum HuePairing {
         }
         try Task.checkCancellation()
         prompt.showVerification()
-        return try await HueConnections.add(address: address, id: id, key: key, path: "")
+        return try await HueConnections.add(
+          address: address, id: id, key: key, path: DiscoveredHueBridge.caPath
+        )
       }
     }
     prompt.cancelPairing = { pairing.cancel() }
@@ -110,7 +145,7 @@ private enum HuePairing {
       if prompt.refreshRequested { return .refresh }
       if pairing.isCancelled { return .cancelled }
       prompt.close()
-      let alert = NSAlert()
+      let alert = makeHueAlert()
       alert.messageText = "Couldn’t connect to Hue Bridge"
       alert.informativeText = error.localizedDescription
       alert.addButton(withTitle: "Refresh")
@@ -125,7 +160,7 @@ private enum HuePairing {
   }
 
   private static func connectManually() async throws -> ConnectionResult {
-    let alert = NSAlert()
+    let alert = makeHueAlert()
     alert.messageText = "Connect Bridge"
     alert.informativeText = "Enter your Philips Hue bridge details and application key."
     alert.addButton(withTitle: "Connect")
@@ -173,7 +208,7 @@ private enum HuePairing {
   }
 
   private static func showConnectionConfirmation(for name: String) {
-    let alert = NSAlert()
+    let alert = makeHueAlert()
     alert.messageText = "Successfully connected to Hue bridge “\(name)”"
     alert.addButton(withTitle: "Done")
     alert.runModal()
@@ -182,7 +217,7 @@ private enum HuePairing {
 
 @MainActor
 private final class HuePairingPrompt: NSObject, NSTableViewDataSource, NSTableViewDelegate {
-  private let alert = NSAlert()
+  private let alert = makeHueAlert()
   private let accessory = NSView()
   private let table = NSTableView()
   private let status = NSTextField(wrappingLabelWithString: "")
@@ -622,7 +657,7 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
       return order == .orderedSame ? $0.id < $1.id : order == .orderedAscending
     }
     NSApp.activate()
-    let alert = NSAlert()
+    let alert = makeHueAlert()
     alert.messageText = "Manage Hue Bridges"
     guard !sorted.isEmpty else {
       alert.informativeText = "No Hue bridges are connected. Use Connect First Hue Bridge to connect one."
@@ -645,12 +680,22 @@ public final class HueCatalog: Catalog, CatalogDiagnosticsReporting {
     alert.window.orderOut(nil)
 
     let record = sorted[picker.indexOfSelectedItem]
-    let confirm = NSAlert()
+    let confirm = makeHueAlert()
     confirm.alertStyle = .warning
     confirm.messageText = "Disconnect “\(label(for: record, among: records))”?"
     confirm.informativeText = "Tuna will remove this bridge and its saved application key from this Mac."
-    confirm.addButton(withTitle: "Cancel")
-    confirm.addButton(withTitle: "Disconnect").hasDestructiveAction = true
+    let cancel = confirm.addButton(withTitle: "Cancel")
+    confirm.addButton(withTitle: "Disconnect")
+    confirm.layout()
+    let window = confirm.window
+    window.defaultButtonCell = cancel.cell as? NSButtonCell
+    // Setting a default button replaces Cancel's Escape shortcut with Return.
+    let escape = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+      guard event.window === window, event.charactersIgnoringModifiers == "\u{1b}" else { return event }
+      cancel.performClick(nil)
+      return nil
+    }
+    defer { if let escape { NSEvent.removeMonitor(escape) } }
     guard confirm.runModal() == .alertSecondButtonReturn else { return false }
     try HueConnections.disconnect(record.id)
     return true

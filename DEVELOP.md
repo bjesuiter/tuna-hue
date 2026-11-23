@@ -68,3 +68,7 @@ The build renders the link preview image `og.png` from
 (`src/pages/og.png.ts`). Open `og.html` in a browser to edit the design, and check
 the result at `http://localhost:4321/tuna-hue/og.png`. Takumi supports a subset of
 browser CSS and only the fonts the route passes to it (Geist and Geist Mono).
+
+## Website screenshots
+
+See the [screenshot inventory and Tart guest setup](scripts/screenshots/README.md).
