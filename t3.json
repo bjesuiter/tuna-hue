@@ -1,0 +1,12 @@
+{
+  "$schema": "https://t3.codes/schema/t3.json",
+  "scripts": [
+    {
+      "name": "Install deps",
+      "command": "if [ -f .gitmodules ] && [ ! -e TunaExtensions/.git ]; then git submodule update --init -- TunaExtensions || exit $?; fi\nbun i",
+      "icon": "configure",
+      "async": false,
+      "runOnWorktreeCreate": true
+    }
+  ]
+}
