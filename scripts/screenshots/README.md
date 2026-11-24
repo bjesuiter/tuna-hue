@@ -6,6 +6,12 @@ Each state has two files, such as `03-press-link-button-light.png` and
 [`order.txt`](order.txt) defines the sequence, starting with connecting a bridge.
 The walkthrough and repository README display the light variants.
 
+After publishing the website PNGs, `bun run screenshots` mirrors them into
+`media/screenshots/tuna-hue/` in the inner `TunaExtensions` repo for the store
+listing. Run `bun run sync-screenshots` from the outer repo to sync existing
+captures. Commit the copied PNGs in the inner repo so the store uploader can
+pick them up.
+
 | Number | State |
 | --- | --- |
 | 01 | Find **Connect First Hue Bridge** in Tuna |

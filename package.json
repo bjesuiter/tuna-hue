@@ -7,11 +7,12 @@
     "dev": "bgproc start -n tuna-hue-website -w 20 -- bun --filter @tuna-hue/website dev --ignore-lock",
     "build": "bun --filter @tuna-hue/website build",
     "preview": "bun --filter @tuna-hue/website preview",
-    "build:plugin": "bun --filter @tuna-hue/plugin build",
+    "build:plugin": "bun --env-file=.env.local exec 'TunaExtensions/scripts/tuna-extension build --scheme HueExtension --release'",
     "install:plugin": "bash scripts/install-dev.sh",
     "install-dev": "bun run build:plugin && bun run install:plugin",
-    "package:plugin": "bash scripts/package-plugin.sh",
+    "package:plugin": "bun --env-file=.env.local exec 'bash scripts/package-plugin.sh'",
     "screenshots": "bash scripts/screenshots/proof.sh --publish",
+    "sync-screenshots": "bash scripts/sync-screenshots.sh",
     "screenshots:proof": "bash scripts/screenshots/proof.sh"
   }
 }

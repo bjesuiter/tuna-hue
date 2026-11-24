@@ -2,17 +2,13 @@
 
 ## Build and install from source
 
-Requires macOS 15 or later, Tuna 0.113 or later with a compatible TunaKit, and Xcode. The project pins TunaKit 1.23.0. From the repository root, run the Bun workspace build and copy the framework into Tuna’s developer extensions folder.
+Requires macOS 15 or later, Tuna 0.113 or later with a compatible TunaKit, and Xcode. The Xcode project in `TunaExtensions` accepts TunaKit 1.23.x. From the outer repository root, build and install the extension into Tuna’s developer extensions folder.
 
 ```sh
-bun run build:plugin
-
-dev_dir="$HOME/Library/Application Support/Tuna/ExtensionsDev"
-mkdir -p "$dev_dir"
-ditto packages/plugin/build/Build/Products/Release/TunaHue.framework "$dev_dir/TunaHue.framework"
+bun run install-dev
 ```
 
-Quit and reopen Tuna after installation or a rebuild. Tuna supplies the TunaKit framework at runtime. [Tuna extension development guide](https://tunaformac.com/docs/building-an-extension#step-4-run-it)
+The install command restarts Tuna. To build without installing, run `bun run build:plugin`. For local Apple Development signing, set `TUNA_DEVELOPMENT_TEAM` and `TUNA_CODE_SIGN_IDENTITY` in the outer repo’s ignored `.env.local`. Use your team ID and the certificate SHA-1 from `security find-identity -v -p codesigning`. Tuna supplies the TunaKit framework at runtime. [Tuna extension development guide](https://tunaformac.com/docs/building-an-extension#step-4-run-it)
 
 Check **Tuna Settings → Sources** after restarting. **Hue Groups** is the catalog exposed by the extension.
 
@@ -26,7 +22,7 @@ TUNA_CODE_SIGN_IDENTITY=YOUR_IDENTITY_SHA1 \
 bun run package:plugin
 ```
 
-The command builds a signed Release framework with Tuna’s pinned upstream packager and writes the `.tunaextension` to `build/package-plugin/`. Set `TUNA_BINARY` if Tuna is installed outside the default search locations. The archive is for review. Tuna’s maintainer handles store signing and publication. [Tuna distribution guide](https://tunaformac.com/docs/extension-distribution)
+The command uses the inner `TunaExtensions` repo’s packager to build the signed Release framework and writes the review archive to `TunaExtensions/dist/store/`. Set `TUNA_BINARY` if Tuna is installed outside the default search locations. Tuna’s maintainer handles store signing and publication. [Tuna distribution guide](https://tunaformac.com/docs/extension-distribution)
 
 ## Bridge integration
 

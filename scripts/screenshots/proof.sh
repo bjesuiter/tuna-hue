@@ -67,7 +67,7 @@ command -v bun >/dev/null
 
 step="build TunaHue.framework"
 bun run build:plugin
-framework=packages/plugin/build/Build/Products/Release/TunaHue.framework
+framework="${TUNA_EXTENSION_DERIVED_DATA:-TunaExtensions/build/dd}/HueExtension/Build/Products/Release/TunaHue.framework"
 [[ -f "$framework/TunaHue" ]]
 staging=$(mktemp -d "${TMPDIR:-/tmp}/tuna-hue-proof.XXXXXXXX")
 xcrun swiftc -target arm64-apple-macos15 scripts/screenshots/tuna-windows.swift -o "$staging/tuna-windows"
@@ -153,4 +153,6 @@ if [[ "$mode" == --publish ]]; then
   cp "$staging/"*.png "$publish_stage/"
   xcrun swift scripts/screenshots/publish.swift "$publish_stage" "$destination" scripts/screenshots/order.txt
   printf 'Replaced all website PNGs in %s\n' "$destination"
+  step="sync the TunaExtensions store PNGs"
+  bun run sync-screenshots
 fi

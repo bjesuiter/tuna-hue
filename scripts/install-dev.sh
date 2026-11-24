@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-framework="$repo_dir/packages/plugin/build/Build/Products/Release/TunaHue.framework"
+framework="${TUNA_EXTENSION_DERIVED_DATA:-$repo_dir/TunaExtensions/build/dd}/HueExtension/Build/Products/Release/TunaHue.framework"
 dev_dir="$HOME/Library/Application Support/Tuna/ExtensionsDev"
 
 if [[ ! -d "$framework" ]]; then

@@ -6,3 +6,4 @@ xcuserdata/
 /packages/website/dist/
 node_modules/
 .astro/
+/.env.local
