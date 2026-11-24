@@ -59,10 +59,15 @@ jq -e '
   ([.data.permissions[] | select(.isGranted) | .name] |
     index("Accessibility") != null and index("Screen Recording") != null)
 ' permissions.json >/dev/null || { cat permissions.json >&2; exit 1; }
-pb screen list | jq -e '
-  .success and (.data.screens | length == 1) and
-  (.data.screens[0] | .bounds.width == 1600 and .bounds.height == 1000 and .scaleFactor == 2)
-' >/dev/null
+
+display_ready() {
+  pb screen list >screens.json &&
+    jq -e '
+      .success and (.data.screens | length == 1) and
+      (.data.screens[0] | .bounds.width == 1600 and .bounds.height == 1000 and .scaleFactor == 2)
+    ' screens.json >/dev/null
+}
+wait_for display_ready || { cat screens.json >&2; exit 1; }
 
 appearance_button() {
   settings_window=$(pb window list --app "System Settings" | jq -er '
